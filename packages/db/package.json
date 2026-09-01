@@ -1,0 +1,29 @@
+{
+  "name": "@repo/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "db": "drizzle-kit",
+    "db:migrate": "drizzle-kit migrate",
+    "auth:generate": "pnpm dlx auth@latest generate --config ../auth/src/auth.ts --yes --output ./src/schema/auth.schema.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "catalog:",
+    "nanoid": "catalog:",
+    "postgres": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "drizzle-kit": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@tanstack/react-start": "catalog:"
+  }
+}

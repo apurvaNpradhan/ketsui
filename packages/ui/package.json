@@ -1,0 +1,42 @@
+{
+  "name": "@repo/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#/*": "./*"
+  },
+  "exports": {
+    "./*": "./*.ts",
+    "./styles/base.css": "./styles/base.css",
+    "./lib/theme-provider": "./lib/theme-provider.tsx",
+    "./components/*": "./components/*.tsx"
+  },
+  "scripts": {
+    "ui": "vpx shadcn@latest"
+  },
+  "dependencies": {
+    "@base-ui/react": "catalog:",
+    "@icons-pack/react-simple-icons": "catalog:",
+    "class-variance-authority": "catalog:",
+    "cnfast": "catalog:",
+    "date-fns": "catalog:",
+    "lucide-react": "catalog:",
+    "motion": "catalog:",
+    "shadcn": "catalog:",
+    "tw-animate-css": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/tsconfig": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@tanstack/react-router": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  }
+}

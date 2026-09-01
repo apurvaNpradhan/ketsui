@@ -1,0 +1,26 @@
+{
+  // https://docs.fallow.tools/configuration/overview
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": ["apps/web/src/router.tsx", "scripts/*.ts"],
+  "workspaces": {
+    "packages": ["apps/*", "packages/*", "tools/*"],
+  },
+  "ignorePatterns": ["**/*.generated.ts", "**/*.d.ts", "**/*.gen.*"],
+  "ignoreDependencies": [
+    "@types/node",
+    "oxc-transform-react",
+    "@tanstack/eslint-plugin-query",
+    "@tanstack/eslint-plugin-router",
+    "vite-plus",
+  ],
+  "ignoreExports": [{ "file": "**/*.mdx", "exports": ["*"] }],
+  "rules": {
+    "unused-files": "error",
+    "unused-exports": "warn",
+    "unresolved-imports": "error",
+  },
+  "duplicates": {
+    "minOccurrences": 3,
+    "mode": "mild",
+  },
+}

@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "astral-sh.ty",
+    "biomejs.biome",
+    "charliermarsh.ruff",
+    "docker.docker",
+    "github.vscode-github-actions",
+    "ms-python.python",
+    "tombi-toml.tombi"
+  ]
+}

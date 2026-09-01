@@ -1,0 +1,62 @@
+{
+  "name": "@repo/web",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "dev": "vp dev",
+    "preview": "vp preview",
+    "start": "node --env-file-if-exists=.env .output/server/index.mjs",
+    "start:e2e": "node --env-file-if-exists=.env.e2e .output/server/index.mjs",
+    "api:generate": "openapi-typescript http://localhost:8000/openapi.json -o src/lib/api/schema.d.ts",
+    "test:e2e": "playwright test --pass-with-no-tests",
+    "ui": "vpx shadcn@latest"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "catalog:",
+    "@icons-pack/react-simple-icons": "catalog:",
+    "@repo/auth": "workspace:*",
+    "@repo/db": "workspace:*",
+    "@repo/ui": "workspace:*",
+    "@tanstack/react-form": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-router-ssr-query": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "@tanstack/router-core": "catalog:",
+    "date-fns": "catalog:",
+    "drizzle-orm": "catalog:",
+    "lucide-react": "catalog:",
+    "motion": "catalog:",
+    "nanoid": "catalog:",
+    "openapi-fetch": "catalog:",
+    "openapi-react-query": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "@repo/tsconfig": "workspace:*",
+    "@tailwindcss/vite": "catalog:",
+    "@tanstack/devtools-a11y": "catalog:",
+    "@tanstack/devtools-vite": "catalog:",
+    "@tanstack/react-devtools": "catalog:",
+    "@tanstack/react-form-devtools": "catalog:",
+    "@tanstack/react-query-devtools": "catalog:",
+    "@tanstack/react-router-devtools": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "cross-env": "catalog:",
+    "nitro": "catalog:",
+    "openapi-typescript": "catalog:",
+    "oxc-transform-react": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "5.9.3",
+    "vite": "catalog:"
+  }
+}

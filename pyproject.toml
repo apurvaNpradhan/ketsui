@@ -1,0 +1,21 @@
+[dependency-groups]
+dev = ["prek>=0.4.11,<1.0.0", "typer>=0.26.1,<1.0.0", "zizmor>=1.28.0"]
+
+[tool.uv.workspace]
+members = ["apps/server"]
+
+[tool.typos.files]
+extend-exclude = [
+  "img/",
+  "uv.lock",
+  "apps/server/coverage/",
+  "apps/server/htmlcov/",
+  "apps/web/dist/",
+  "apps/web/public/assets/images/",
+]
+
+[tool.typos.default]
+extend-ignore-re = ["@[a-zA-Z0-9](?:-?[a-zA-Z0-9])*", "Bump certifi "]
+
+[tool.typos.default.extend-identifiers]
+alls = "alls"

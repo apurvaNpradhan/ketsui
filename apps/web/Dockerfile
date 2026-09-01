@@ -1,0 +1,38 @@
+FROM node:24.20.0-bookworm-slim AS build
+
+RUN apt-get update \
+  && apt-get install --no-install-recommends -y git \
+  && rm -rf /var/lib/apt/lists/*
+RUN npm install --global pnpm@12.2.0
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages/auth/package.json packages/auth/package.json
+COPY packages/db/package.json packages/db/package.json
+COPY packages/ui/package.json packages/ui/package.json
+COPY tools/tsconfig/package.json tools/tsconfig/package.json
+RUN pnpm install --frozen-lockfile --ignore-scripts \
+  && pnpm rebuild esbuild
+
+COPY . .
+RUN pnpm exec vp run build
+
+FROM node:24.20.0-bookworm-slim AS runtime
+
+RUN npm install --global pnpm@12.2.0
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=build /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/packages/db ./packages/db
+COPY --from=build /app/packages/auth ./packages/auth
+COPY --from=build /app/packages/ui/package.json ./packages/ui/package.json
+COPY --from=build /app/tools/tsconfig/package.json ./tools/tsconfig/package.json
+COPY --from=build /app/tools/tsconfig/base.json ./tools/tsconfig/base.json
+COPY --from=build /app/apps/web/package.json ./apps/web/package.json
+COPY --from=build /app/apps/web/.output ./apps/web/.output
+
+WORKDIR /app
+CMD ["node", "apps/web/.output/server/index.mjs"]
