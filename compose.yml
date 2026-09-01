@@ -1,74 +1,117 @@
 services:
   db:
     image: postgres:18
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      BACKEND_DB_PASSWORD: ${BACKEND_DB_PASSWORD:?BACKEND_DB_PASSWORD must be set}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:?AUTH_DB_PASSWORD must be set}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql
       - ./docker/postgres/init/01-create-databases.sh:/docker-entrypoint-initdb.d/01-create-databases.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d postgres"]
       interval: 5s
       timeout: 5s
       retries: 10
       start_period: 10s
 
-  backend:
+  backend-migrate:
     build:
       context: .
       dockerfile: apps/server/Dockerfile
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - .env
-    command: ["sh", "-c", "bash scripts/prestart.sh && bash scripts/start.sh"]
+    environment:
+      BACKEND_DATABASE_URL: postgresql://backend_app:${BACKEND_DB_PASSWORD}@db:5432/backend_db
+      BACKEND_PORT: ${BACKEND_PORT:-8000}
+      BETTER_AUTH_JWKS_URL: http://frontend:${FRONTEND_PORT:-5173}/api/auth/jwks
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
+      FASTAPI_ENV: ${FASTAPI_ENV:-development}
+      PROJECT_NAME: ${PROJECT_NAME:-Ketsui}
+    command: ["uv", "run", "alembic", "upgrade", "head"]
+    restart: "no"
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    depends_on:
+      backend-migrate:
+        condition: service_completed_successfully
+    environment:
+      BACKEND_DATABASE_URL: postgresql://backend_app:${BACKEND_DB_PASSWORD}@db:5432/backend_db
+      BACKEND_PORT: ${BACKEND_PORT:-8000}
+      BETTER_AUTH_JWKS_URL: http://frontend:${FRONTEND_PORT:-5173}/api/auth/jwks
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
+      FASTAPI_ENV: ${FASTAPI_ENV:-development}
+      FRONTEND_HOST: ${FRONTEND_HOST:-http://localhost:5173}
+      PROJECT_NAME: ${PROJECT_NAME:-Ketsui}
+    command: ["bash", "scripts/start.sh"]
     ports:
-      - "${BACKEND_PORT}:${BACKEND_PORT}"
+      - "${BACKEND_PORT:-8000}:${BACKEND_PORT:-8000}"
     healthcheck:
       test:
         [
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://localhost:${BACKEND_PORT}/v1/utils/health-check/')",
+          "import urllib.request; urllib.request.urlopen('http://localhost:${BACKEND_PORT:-8000}/v1/utils/health-check/')",
         ]
       interval: 5s
       timeout: 5s
       retries: 10
       start_period: 10s
 
-  frontend:
+  auth-migrate:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
     depends_on:
       db:
         condition: service_healthy
-      backend:
-        condition: service_healthy
-    env_file:
-      - .env
     environment:
-      FASTAPI_ORIGIN: "http://backend:${BACKEND_PORT}"
+      AUTH_DATABASE_URL: postgresql://auth_app:${AUTH_DB_PASSWORD}@db:5432/auth_db
     command:
       [
         "sh",
         "-c",
-        'cd packages/db && node ../../node_modules/.pnpm/drizzle-kit@*/node_modules/drizzle-kit/bin.cjs migrate && NITRO_PORT="${FRONTEND_PORT}" node ../../apps/web/.output/server/index.mjs',
+        "cd packages/db && node ../../node_modules/.pnpm/drizzle-kit@*/node_modules/drizzle-kit/bin.cjs migrate",
       ]
-    restart: on-failure
+    restart: "no"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+      auth-migrate:
+        condition: service_completed_successfully
+    environment:
+      AUTH_DATABASE_URL: postgresql://auth_app:${AUTH_DB_PASSWORD}@db:5432/auth_db
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
+      FASTAPI_ORIGIN: http://backend:${BACKEND_PORT:-8000}
+      FRONTEND_PORT: ${FRONTEND_PORT:-5173}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     ports:
-      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - "${FRONTEND_PORT:-5173}:${FRONTEND_PORT:-5173}"
+    command:
+      ["sh", "-c", 'NITRO_PORT="${FRONTEND_PORT:-5173}" node apps/web/.output/server/index.mjs']
+    restart: on-failure
     healthcheck:
       test:
         [
           "CMD",
           "node",
           "-e",
-          "fetch('http://localhost:${FRONTEND_PORT}').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+          "fetch('http://localhost:${FRONTEND_PORT:-5173}').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
         ]
       interval: 5s
       timeout: 5s

@@ -1,4 +1,3 @@
-import { SiGoogle } from "@icons-pack/react-simple-icons";
 import { authClient } from "@repo/auth/auth-client";
 import { Button } from "@repo/ui/components/button";
 import { toast } from "@repo/ui/components/toast";
@@ -15,21 +14,20 @@ function SignInSocialButton(props: SocialLoginButtonProps) {
   const providerLabel = props.provider.charAt(0).toUpperCase() + props.provider.slice(1);
 
   const mutation = useMutation({
-    mutationFn: async () =>
-      await authClient.signIn.social(
-        {
-          provider: props.provider,
-          callbackURL: props.callbackURL,
-        },
-        {
-          onError: ({ error }) => {
-            toast.add({
-              type: "error",
-              description: error.message || `An error occurred during ${providerLabel} sign-in.`,
-            });
-          },
-        },
-      ),
+    mutationFn: async () => {
+      const result = await authClient.signIn.social({
+        provider: props.provider,
+        callbackURL: props.callbackURL,
+      });
+      if (result.error) throw new Error(result.error.message);
+      return result.data;
+    },
+    onError: (error) => {
+      toast.add({
+        type: "error",
+        description: error.message || `An error occurred during ${providerLabel} sign-in.`,
+      });
+    },
   });
 
   return (
@@ -68,7 +66,7 @@ export function SocialSignInButtons({
   );
 }
 
-export function GoogleIcon() {
+function GoogleIcon() {
   return (
     <svg
       width="800px"

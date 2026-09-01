@@ -7,8 +7,7 @@ import { auth } from "../auth";
  * This server function is meant to be called via authQueryOptions() in queries.ts,
  * which is used in the _auth layout route to protect all child routes under it (e.g. _auth/app/*)
  *
- * For securing server functions or API routes,
- * consider using authMiddleware from middleware.ts instead.
+ * Server functions that access private data must perform their own auth check.
  */
 export const $getUser = createServerFn({ method: "GET" }).handler(async () => {
   const user = await _getUser();
@@ -23,9 +22,9 @@ interface GetUserServerQuery {
 /**
  * Server-only util, meant to be used by the $getUser server function and auth middleware so logic can be shared with optional query params.
  *
- * For server app logic, consider using authMiddleware instead.
+ * For server app logic, keep authentication in the server function handler.
  */
-export const _getUser = createServerOnlyFn(async (query?: GetUserServerQuery) => {
+const _getUser = createServerOnlyFn(async (query?: GetUserServerQuery) => {
   const session = await auth.api.getSession({
     headers: getRequest().headers,
     query,

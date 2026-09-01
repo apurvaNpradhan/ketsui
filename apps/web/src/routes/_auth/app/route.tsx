@@ -10,25 +10,21 @@ export const Route = createFileRoute("/_auth/app")({
 
 function AppLayout() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-2 px-2">
+    <main className="flex min-h-svh flex-col items-center justify-center gap-2 px-2">
       <div className="flex w-full max-w-3xl justify-between">
-        <div className="flex items-center gap-1">
-          <Button render={<Link to="/" />} size="sm" nativeButton={false}>
-            back to home
-          </Button>
-          <span className="rounded-md border bg-card p-1 font-mono text-xs text-card-foreground">
-            _auth/app/route.tsx
-          </span>
-        </div>
+        <Button render={<Link to="/" />} size="sm" nativeButton={false}>
+          Back to home
+        </Button>
         <ThemeToggle />
       </div>
       <div className="w-full max-w-3xl rounded-md border p-2">
+        <h1 className="sr-only">Your account</h1>
         <Outlet />
       </div>
 
       <div className="flex w-full max-w-3xl flex-wrap justify-between gap-2 text-sm">
         <SignOutButton />
       </div>
-    </div>
+    </main>
   );
 }

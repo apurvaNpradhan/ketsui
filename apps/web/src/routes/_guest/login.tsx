@@ -17,27 +17,20 @@ function LoginForm() {
   const { redirectUrl } = Route.useRouteContext();
 
   const { mutate: emailLoginMutate, isPending } = useMutation({
-    mutationFn: async (data: { email: string; password: string }) =>
-      await authClient.signIn.email(
-        {
-          ...data,
-          callbackURL: redirectUrl,
-        },
-        {
-          onError: ({ error }) => {
-            toast.add({
-              type: "error",
-              description: error.message || "An error occurred while signing in.",
-            });
-          },
-          // better-auth seems to trigger a hard navigation on login,
-          // so we don't have to revalidate & navigate ourselves
-          // onSuccess: () => {
-          //   queryClient.removeQueries({ queryKey: authQueryOptions().queryKey });
-          //   navigate({ to: redirectUrl });
-          // },
-        },
-      ),
+    mutationFn: async (data: { email: string; password: string }) => {
+      const result = await authClient.signIn.email({
+        ...data,
+        callbackURL: redirectUrl,
+      });
+      if (result.error) throw new Error(result.error.message);
+      return result.data;
+    },
+    onError: (error) => {
+      toast.add({
+        type: "error",
+        description: error.message || "An error occurred while signing in.",
+      });
+    },
   });
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {

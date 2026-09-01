@@ -36,7 +36,6 @@
     "node": ">=24"
   },
   "packageManager": "pnpm@12.2.0",
-  "generator": "create-mugnavo",
   "intent": {
     "skills": [
       "@tanstack/*"

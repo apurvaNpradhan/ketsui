@@ -1,6 +1,6 @@
 import { authQueryOptions } from "@repo/auth/tanstack/queries";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
-import { GalleryVerticalEndIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_guest")({
   component: RouteComponent,
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_guest")({
       ...authQueryOptions(),
       staleTime: "static",
     });
-    void context.queryClient.query(authQueryOptions());
+    void context.queryClient.query(authQueryOptions()).catch(noop);
 
     if (user) {
       throw redirect({
@@ -33,10 +33,10 @@ function RouteComponent() {
       <header className="absolute inset-x-0 top-6 flex justify-center">
         <Link
           to="/"
-          aria-label="Katsui. home"
+          aria-label="Ketsui home"
           className="mx-auto flex items-center gap-2 font-semibold tracking-tight"
         >
-          Katsui
+          Ketsui
         </Link>
       </header>
       <Outlet />

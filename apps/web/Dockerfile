@@ -20,7 +20,8 @@ RUN pnpm exec vp run build
 
 FROM node:24.20.0-bookworm-slim AS runtime
 
-RUN npm install --global pnpm@12.2.0
+RUN npm install --global pnpm@12.2.0 \
+  && useradd --create-home --uid 10001 appuser
 WORKDIR /app
 ENV NODE_ENV=production
 
@@ -34,5 +35,7 @@ COPY --from=build /app/tools/tsconfig/base.json ./tools/tsconfig/base.json
 COPY --from=build /app/apps/web/package.json ./apps/web/package.json
 COPY --from=build /app/apps/web/.output ./apps/web/.output
 
+RUN chown -R appuser:appuser /app
+USER appuser
 WORKDIR /app
 CMD ["sh", "-c", "NITRO_PORT=\"${PORT:-${FRONTEND_PORT:?FRONTEND_PORT must be set}}\" node apps/web/.output/server/index.mjs"]

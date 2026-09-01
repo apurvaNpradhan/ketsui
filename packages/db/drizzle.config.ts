@@ -7,6 +7,9 @@ import type { Config } from "drizzle-kit";
 const envFile = "../../.env";
 if (existsSync(envFile)) loadEnvFile(envFile);
 
+const authDatabaseUrl = process.env.AUTH_DATABASE_URL;
+if (!authDatabaseUrl) throw new Error("AUTH_DATABASE_URL must be set");
+
 export default {
   out: "./migrations",
   schema: "./src/schema/index.ts",
@@ -16,6 +19,6 @@ export default {
 
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.AUTH_DATABASE_URL as string,
+    url: authDatabaseUrl,
   },
 } satisfies Config;

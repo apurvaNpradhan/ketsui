@@ -17,15 +17,11 @@
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
-    "@icons-pack/react-simple-icons": "catalog:",
     "class-variance-authority": "catalog:",
     "cnfast": "catalog:",
-    "date-fns": "catalog:",
     "lucide-react": "catalog:",
-    "motion": "catalog:",
     "shadcn": "catalog:",
-    "tw-animate-css": "catalog:",
-    "zod": "catalog:"
+    "tw-animate-css": "catalog:"
   },
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",

@@ -1,4 +1,4 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { authQueryOptions } from "./queries";
 
@@ -10,11 +10,6 @@ import { authQueryOptions } from "./queries";
  * For reading auth data in loaders/beforeLoad,
  * we can use `authQueryOptions` from queries.ts with `queryClient` from loader context.
  */
-
-export function useAuth() {
-  const { data: user, isPending } = useQuery(authQueryOptions());
-  return { user, isPending };
-}
 
 export function useAuthSuspense() {
   const { data: user } = useSuspenseQuery(authQueryOptions());

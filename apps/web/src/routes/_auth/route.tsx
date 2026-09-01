@@ -1,4 +1,5 @@
 import { authQueryOptions } from "@repo/auth/tanstack/queries";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 /**
@@ -19,15 +20,14 @@ export const Route = createFileRoute("/_auth")({
      * Both cache layers help for faster UX and page load/navigation.
      *
      * But this is NOT a server-side security guarantee.
-     * Consider authMiddleware for data fetching operations & mutations
-     * where auth is required, e.g. for API routes and server functions.
-     * see `packages/auth/src/tanstack/middleware.ts`
+     * Server functions and API handlers must perform their own authentication
+     * checks; this route guard only protects navigation.
      */
     const user = await context.queryClient.query({
       ...authQueryOptions(),
       staleTime: "static",
     });
-    void context.queryClient.query(authQueryOptions());
+    void context.queryClient.query(authQueryOptions()).catch(noop);
 
     if (!user) {
       throw redirect({ to: "/login" });

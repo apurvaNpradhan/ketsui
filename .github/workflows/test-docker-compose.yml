@@ -3,7 +3,7 @@ name: Test Docker Compose
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 permissions:
@@ -17,23 +17,25 @@ jobs:
       POSTGRES_PASSWORD: changethis
       BACKEND_DB_PASSWORD: backendpassword
       AUTH_DB_PASSWORD: authpassword
-      BETTER_AUTH_SECRET: ci-test-secret
+      BETTER_AUTH_SECRET: ci-test-secret-replace-with-32-characters-minimum
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Prepare Compose environment
+        run: cp .env.docker.example .env.docker
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       - run: corepack enable && corepack prepare pnpm@12.2.0 --activate
-      - run: docker compose build
-      - run: docker compose down -v --remove-orphans
-      - run: docker compose up --build -d --wait
+      - run: docker compose --env-file .env.docker build
+      - run: docker compose --env-file .env.docker down -v --remove-orphans
+      - run: docker compose --env-file .env.docker up --build -d --wait
       - name: Test backend is up
         run: curl --fail http://localhost:8000/v1/utils/health-check/
       - name: Test frontend is up
         run: curl --fail http://localhost:5173
-      - run: docker compose down -v --remove-orphans
+      - run: docker compose --env-file .env.docker down -v --remove-orphans

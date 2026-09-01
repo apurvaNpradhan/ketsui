@@ -15,7 +15,10 @@ COPY apps/server/scripts ./apps/server/scripts
 COPY apps/web/public ./apps/web/public
 
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --package app
+    uv sync --frozen --package app \
+    && useradd --create-home --uid 10001 appuser \
+    && chown -R appuser:appuser /app
 
+USER appuser
 WORKDIR /app/apps/server
-CMD ["sh", "-c", "bash scripts/prestart.sh && bash scripts/start.sh"]
+CMD ["bash", "scripts/start.sh"]

@@ -23,7 +23,7 @@ The API is available at `http://localhost:$BACKEND_PORT`.
 - Health check: `http://localhost:$BACKEND_PORT/v1/utils/health-check/`
 - Authenticated user: `http://localhost:$BACKEND_PORT/v1/users/me`
 
-Set `BACKEND_PORT`, `BACKEND_DATABASE_URL`, `BETTER_AUTH_JWKS_URL`, and `BETTER_AUTH_URL` in the root `.env`. The backend validates Better Auth JWT claims and does not access the auth database.
+Set `BACKEND_PORT`, `BACKEND_DATABASE_URL`, `BETTER_AUTH_JWKS_URL`, and `BETTER_AUTH_URL` in the root `.env`. The backend validates Better Auth JWT claims and does not access the auth database. In production, use HTTPS for the Better Auth URLs.
 
 ## Migrations
 

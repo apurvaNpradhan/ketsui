@@ -5,7 +5,10 @@ import postgres from "postgres";
 import { authRelations } from "./schema/auth.schema";
 import { relations } from "./schema/relations";
 
-const client = postgres(process.env.AUTH_DATABASE_URL as string);
+const authDatabaseUrl = process.env.AUTH_DATABASE_URL;
+if (!authDatabaseUrl) throw new Error("AUTH_DATABASE_URL must be set");
+
+const client = postgres(authDatabaseUrl);
 
 export const db = drizzle({
   client,

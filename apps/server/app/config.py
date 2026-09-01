@@ -2,7 +2,7 @@ import warnings
 from pathlib import Path
 from typing import Literal
 
-from pydantic import AliasChoices, Field, PostgresDsn, field_validator, model_validator
+from pydantic import AnyHttpUrl, PostgresDsn, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,16 +15,20 @@ class Settings(BaseSettings):
 
     API_V1_STR: str = "/v1"
     FRONTEND_HOST: str = "http://localhost:5173"
-    FASTAPI_ENV: Literal["development"] | None = None
+    FASTAPI_ENV: Literal["development", "production"] = "production"
     PROJECT_NAME: str = "Ketsui"
     BACKEND_PORT: int = 8000
-    DATABASE_URL: PostgresDsn = Field(
-        validation_alias=AliasChoices("BACKEND_DATABASE_URL", "DATABASE_URL")
-    )
+    BACKEND_DATABASE_URL: PostgresDsn
     BETTER_AUTH_JWKS_URL: str
     BETTER_AUTH_URL: str = "http://localhost:5173"
 
-    @field_validator("DATABASE_URL", mode="before")
+    @field_validator("BETTER_AUTH_JWKS_URL", "BETTER_AUTH_URL")
+    @classmethod
+    def _validate_http_url(cls, value: str) -> str:
+        AnyHttpUrl(value)
+        return value
+
+    @field_validator("BACKEND_DATABASE_URL", mode="before")
     @classmethod
     def _use_psycopg_driver(cls, value: str | PostgresDsn) -> str:
         database_url = str(value)
@@ -34,18 +38,28 @@ class Settings(BaseSettings):
         return database_url
 
     @model_validator(mode="after")
-    def _enforce_non_default_database_secret(self) -> Settings:
-        for host in self.DATABASE_URL.hosts():
+    def _validate_deployment_settings(self) -> Settings:
+        placeholder_passwords = {
+            "changethis",
+            "change-this-backend-password",
+            "change-this-auth-password",
+            "replace-with-at-least-32-characters",
+        }
+        for host in self.BACKEND_DATABASE_URL.hosts():
             password = host.get("password")
-            if password == "changethis":
-                message = (
-                    'The value of DATABASE_URL password is "changethis", '
-                    "for security, please change it, at least for deployments."
-                )
+            if password in placeholder_passwords:
+                message = "Set a real backend database password before deployment."
                 if self.FASTAPI_ENV == "development":
                     warnings.warn(message, stacklevel=1)
                 else:
                     raise ValueError(message)
+
+        if self.FASTAPI_ENV == "production":
+            if self.BETTER_AUTH_URL == "http://localhost:5173":
+                raise ValueError("BETTER_AUTH_URL must be set in production.")
+            if AnyHttpUrl(self.BETTER_AUTH_JWKS_URL).scheme != "https":
+                raise ValueError("BETTER_AUTH_JWKS_URL must use HTTPS in production.")
+
         return self
 
 

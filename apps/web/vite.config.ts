@@ -45,6 +45,17 @@ export default defineConfig({
     tanstackStart(),
     // https://tanstack.com/start/latest/docs/framework/react/guide/hosting
     nitro({
+      routeRules: {
+        "/**": {
+          headers: {
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "strict-origin-when-cross-origin",
+            "X-Frame-Options": "DENY",
+            "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+            "Content-Security-Policy": "frame-ancestors 'none'",
+          },
+        },
+      },
       // fixes SSR issues with Vite 8:
       // https://discord.com/channels/719702312431386674/1490005967067414608/1490634230458224751
       traceDeps: ["react", "react-dom"],
@@ -53,15 +64,6 @@ export default defineConfig({
        * @see https://github.com/TanStack/router/issues/8031
        */
       inlineDynamicImports: true,
-      /**
-       * TODO(security): Review production security headers before deployment.
-       *
-       * App-level policies such as CSP, Permissions-Policy, X-Frame-Options /
-       * frame-ancestors, COOP, Referrer-Policy, and X-Content-Type-Options are
-       * intentionally not configured by the TanStarter template (which this project
-       * is based on) because safe values depend on the app's embedding requirements,
-       * browser APIs, integrations, and content.
-       */
     }),
     viteReact({ compiler: true }),
     tailwindcss(),

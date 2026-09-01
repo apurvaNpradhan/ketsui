@@ -23,7 +23,7 @@ repos:
         entry: pnpm exec vp fmt --no-error-on-unmatched-pattern
         language: system
         types: [text]
-        files: \.(js|jsx|ts|tsx|json|css)$
+        files: \.(js|jsx|ts|tsx|json|webmanifest|css)$
 
       - id: local-typescript-check
         name: TypeScript check

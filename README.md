@@ -16,7 +16,8 @@ Requirements: Node 24, pnpm 12.2.0, Python 3.14, uv, and Docker.
 
 ```sh
 cp .env.example .env
-# Set local secrets in these files
+cp .env.docker.example .env.docker
+# Set local secrets in both files
 pnpm install
 uv sync
 docker compose --env-file .env.docker up -d db
@@ -42,10 +43,11 @@ The schema source is `http://localhost:$BACKEND_PORT/openapi.json`; it is genera
 
 ```sh
 cp .env.docker.example .env.docker
+# Set real local values in .env.docker first
 docker compose --env-file .env.docker up --build
 ```
 
-Compose runs one PostgreSQL 18 service. Its first-run init script creates `backend_db`/`backend_app` and `auth_db`/`auth_app`. Alembic runs only against the backend database, and Drizzle runs only against the auth database. Init scripts run only on an empty Postgres volume; legacy `app` and `tanstarter` data requires a separate dump/restore migration decision.
+Compose runs one PostgreSQL 18 service plus one-shot `backend-migrate` and `auth-migrate` jobs before the application services. Its first-run init script creates `backend_db`/`backend_app` and `auth_db`/`auth_app`. Alembic runs only against the backend database, and Drizzle runs only against the auth database. Init scripts run only on an empty Postgres volume; legacy `app` and `tanstarter` data requires a separate dump/restore migration decision.
 
 ## Auth
 
