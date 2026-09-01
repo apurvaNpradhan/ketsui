@@ -12,6 +12,7 @@ COPY pyproject.toml uv.lock .python-version ./
 COPY apps/server/pyproject.toml apps/server/alembic.ini ./apps/server/
 COPY apps/server/app ./apps/server/app
 COPY apps/server/scripts ./apps/server/scripts
+COPY apps/web/public ./apps/web/public
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --package app

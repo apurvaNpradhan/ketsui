@@ -4,7 +4,7 @@ import { loadEnvFile } from "node:process";
 import type { Config } from "drizzle-kit";
 
 // Load host-development values when the file exists; Compose supplies env directly.
-const envFile = "../../apps/web/.env";
+const envFile = "../../.env";
 if (existsSync(envFile)) loadEnvFile(envFile);
 
 export default {
@@ -16,6 +16,6 @@ export default {
 
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL as string,
+    url: process.env.AUTH_DATABASE_URL as string,
   },
 } satisfies Config;

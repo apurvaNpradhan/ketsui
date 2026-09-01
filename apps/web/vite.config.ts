@@ -6,6 +6,8 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
+  // The repository root owns the environment for every workspace.
+  envDir: "../..",
   run: {
     // Vite Task
     // https://viteplus.dev/config/run

@@ -16,12 +16,10 @@ Requirements: Node 24, pnpm 12.2.0, Python 3.14, uv, and Docker.
 
 ```sh
 cp .env.example .env
-cp apps/server/.env.example apps/server/.env
-cp apps/web/.env.example apps/web/.env
-# Set local secrets in each file
+# Set local secrets in these files
 pnpm install
 uv sync
-docker compose up -d db
+docker compose --env-file .env.docker up -d db
 ```
 
 Start the backend from `apps/server` and the web app from the repository root:
@@ -43,7 +41,8 @@ The schema source is `http://localhost:8000/openapi.json`; it is generated to `a
 ## Compose
 
 ```sh
-docker compose up --build
+cp .env.docker.example .env.docker
+docker compose --env-file .env.docker up --build
 ```
 
 Compose runs one PostgreSQL 18 service. Its first-run init script creates `backend_db`/`backend_app` and `auth_db`/`auth_app`. Alembic runs only against the backend database, and Drizzle runs only against the auth database. Init scripts run only on an empty Postgres volume; legacy `app` and `tanstarter` data requires a separate dump/restore migration decision.
@@ -51,3 +50,17 @@ Compose runs one PostgreSQL 18 service. Its first-run init script creates `backe
 ## Auth
 
 Better Auth issues EdDSA JWTs from `/api/auth/jwks`. FastAPI validates the bearer token's signature, issuer, audience, and required identity claims in `app/auth.py`; it does not connect to the Better Auth database.
+
+To test authenticated endpoints in Scalar:
+
+1. Log in at `http://localhost:5173/login`.
+2. Open the browser DevTools Console on the frontend and run:
+
+   ```js
+   const { token } = await fetch("/api/auth/token").then((r) => r.json());
+   copy(token);
+   ```
+
+3. Open `http://localhost:8000/docs`, click **Authorize**, and paste the token without the `Bearer ` prefix.
+
+Scalar will send the token as `Authorization: Bearer <token>`. For example, test the authenticated `/v1/users/me` endpoint.

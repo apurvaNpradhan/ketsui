@@ -32,13 +32,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "description",
         content: "A TanStack Start project scaffolded with create-mugnavo.",
       },
+      {
+        name: "theme-color",
+        content: "#ffffff",
+      },
     ],
     links: [
-      // Replace with your icons here, or remove if you have a favicon.ico in public/
-      {
-        rel: "icon",
-        href: "https://mugnavo.com/favicon.ico",
-      },
+      { rel: "icon", href: "/favicon.ico" },
+      { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
+      { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/site.webmanifest" },
       { rel: "stylesheet", href: appCss },
     ],
   }),
@@ -47,7 +51,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootDocument({ children }: { readonly children: React.ReactNode }) {
   return (
-    // suppress since we're updating the "dark" class in ThemeProvider
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />

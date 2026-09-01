@@ -2,13 +2,13 @@ import warnings
 from pathlib import Path
 from typing import Literal
 
-from pydantic import PostgresDsn, field_validator, model_validator
+from pydantic import AliasChoices, Field, PostgresDsn, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=Path(__file__).resolve().parents[1] / ".env",
+        env_file=Path(__file__).resolve().parents[3] / ".env",
         env_ignore_empty=True,
         extra="ignore",
     )
@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     FRONTEND_HOST: str = "http://localhost:5173"
     FASTAPI_ENV: Literal["development"] | None = None
     PROJECT_NAME: str = "Ketsui"
-    DATABASE_URL: PostgresDsn
+    DATABASE_URL: PostgresDsn = Field(
+        validation_alias=AliasChoices("BACKEND_DATABASE_URL", "DATABASE_URL")
+    )
     BETTER_AUTH_JWKS_URL: str
     BETTER_AUTH_URL: str = "http://localhost:5173"
 

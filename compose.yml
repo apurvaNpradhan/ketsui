@@ -1,12 +1,8 @@
 services:
   db:
     image: postgres:18
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Variable not set}
-      POSTGRES_DB: postgres
-      BACKEND_DB_PASSWORD: ${BACKEND_DB_PASSWORD:?Variable not set}
-      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:?Variable not set}
+    env_file:
+      - .env
     ports:
       - "5432:5432"
     volumes:
@@ -26,13 +22,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      PROJECT_NAME: ${PROJECT_NAME:-Ketsui}
-      FRONTEND_HOST: ${FRONTEND_HOST:-http://localhost:5173}
-      FASTAPI_ENV: ${FASTAPI_ENV:-development}
-      DATABASE_URL: postgresql://backend_app:${BACKEND_DB_PASSWORD:?Variable not set}@db:5432/backend_db
-      BETTER_AUTH_JWKS_URL: http://frontend:3000/api/auth/jwks
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
+    env_file:
+      - .env
     command:
       ["sh", "-c", "bash scripts/prestart.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
     ports:
@@ -59,16 +50,8 @@ services:
         condition: service_healthy
       backend:
         condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql://auth_app:${AUTH_DB_PASSWORD:?Variable not set}@db:5432/auth_db
-      FASTAPI_ORIGIN: http://backend:8000
-      VITE_BASE_URL: ${VITE_BASE_URL:-http://localhost:5173}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Variable not set}
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    env_file:
+      - .env
     command:
       [
         "sh",
