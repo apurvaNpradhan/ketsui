@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     FRONTEND_HOST: str = "http://localhost:5173"
     FASTAPI_ENV: Literal["development"] | None = None
     PROJECT_NAME: str = "Ketsui"
+    BACKEND_PORT: int = 8000
     DATABASE_URL: PostgresDsn = Field(
         validation_alias=AliasChoices("BACKEND_DATABASE_URL", "DATABASE_URL")
     )

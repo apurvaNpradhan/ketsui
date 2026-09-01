@@ -18,4 +18,4 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --package app
 
 WORKDIR /app/apps/server
-CMD ["sh", "-c", "bash scripts/prestart.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "bash scripts/prestart.sh && bash scripts/start.sh"]

@@ -26,7 +26,7 @@ Start the backend from `apps/server` and the web app from the repository root:
 
 ```sh
 uv run --directory apps/server alembic upgrade head
-uv run --directory apps/server uvicorn app.main:app --reload
+uv run --directory apps/server bash scripts/start.sh --reload
 pnpm --filter @repo/web dev
 ```
 
@@ -36,7 +36,7 @@ Generate the typed OpenAPI client after backend route changes:
 pnpm --filter @repo/web api:generate
 ```
 
-The schema source is `http://localhost:8000/openapi.json`; it is generated to `apps/web/src/lib/api/schema.d.ts`. The client uses `/api` and the TanStack Start wildcard route proxies to `FASTAPI_ORIGIN`.
+The schema source is `http://localhost:$BACKEND_PORT/openapi.json`; it is generated to `apps/web/src/lib/api/schema.d.ts`. The client uses `/api` and the TanStack Start wildcard route proxies to `FASTAPI_ORIGIN`. Set `FRONTEND_PORT` and `BACKEND_PORT` in `.env` to choose the app ports.
 
 ## Compose
 
@@ -53,7 +53,7 @@ Better Auth issues EdDSA JWTs from `/api/auth/jwks`. FastAPI validates the beare
 
 To test authenticated endpoints in Scalar:
 
-1. Log in at `http://localhost:5173/login`.
+1. Log in at `http://localhost:$FRONTEND_PORT/login`.
 2. Open the browser DevTools Console on the frontend and run:
 
    ```js
@@ -61,6 +61,6 @@ To test authenticated endpoints in Scalar:
    copy(token);
    ```
 
-3. Open `http://localhost:8000/docs`, click **Authorize**, and paste the token without the `Bearer ` prefix.
+3. Open `http://localhost:$BACKEND_PORT/docs`, click **Authorize**, and paste the token without the `Bearer ` prefix.
 
 Scalar will send the token as `Authorization: Bearer <token>`. For example, test the authenticated `/v1/users/me` endpoint.

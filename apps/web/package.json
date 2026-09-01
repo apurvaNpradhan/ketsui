@@ -8,9 +8,9 @@
   "scripts": {
     "dev": "node --env-file-if-exists=../../.env ../../node_modules/vite-plus/bin/vp dev",
     "preview": "node --env-file-if-exists=../../.env ../../node_modules/vite-plus/bin/vp preview",
-    "start": "node --env-file-if-exists=../../.env .output/server/index.mjs",
-    "start:e2e": "node --env-file-if-exists=../../.env .output/server/index.mjs",
-    "api:generate": "openapi-typescript http://localhost:8000/openapi.json -o src/lib/api/schema.d.ts",
+    "start": "node --env-file-if-exists=../../.env --input-type=module -e \"process.env.NITRO_PORT = process.env.PORT || process.env.FRONTEND_PORT; await import('./.output/server/index.mjs')\"",
+    "start:e2e": "node --env-file-if-exists=../../.env --input-type=module -e \"process.env.NITRO_PORT = process.env.PORT || process.env.FRONTEND_PORT; await import('./.output/server/index.mjs')\"",
+    "api:generate": "node --env-file-if-exists=../../.env --input-type=module -e \"if (!process.env.BACKEND_PORT) throw new Error('BACKEND_PORT must be set'); import { execFileSync } from 'node:child_process'; execFileSync('openapi-typescript', ['http://localhost:' + process.env.BACKEND_PORT + '/openapi.json', '-o', 'src/lib/api/schema.d.ts'], { stdio: 'inherit' })\"",
     "test:e2e": "playwright test --pass-with-no-tests",
     "ui": "vpx shadcn@latest"
   },

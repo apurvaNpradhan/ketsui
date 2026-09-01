@@ -24,17 +24,16 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    command:
-      ["sh", "-c", "bash scripts/prestart.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+    command: ["sh", "-c", "bash scripts/prestart.sh && bash scripts/start.sh"]
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
     healthcheck:
       test:
         [
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/utils/health-check/')",
+          "import urllib.request; urllib.request.urlopen('http://localhost:${BACKEND_PORT}/v1/utils/health-check/')",
         ]
       interval: 5s
       timeout: 5s
@@ -52,22 +51,24 @@ services:
         condition: service_healthy
     env_file:
       - .env
+    environment:
+      FASTAPI_ORIGIN: "http://backend:${BACKEND_PORT}"
     command:
       [
         "sh",
         "-c",
-        "cd packages/db && node ../../node_modules/.pnpm/drizzle-kit@*/node_modules/drizzle-kit/bin.cjs migrate && node ../../apps/web/.output/server/index.mjs",
+        'cd packages/db && node ../../node_modules/.pnpm/drizzle-kit@*/node_modules/drizzle-kit/bin.cjs migrate && NITRO_PORT="${FRONTEND_PORT}" node ../../apps/web/.output/server/index.mjs',
       ]
     restart: on-failure
     ports:
-      - "5173:3000"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     healthcheck:
       test:
         [
           "CMD",
           "node",
           "-e",
-          "fetch('http://localhost:3000').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+          "fetch('http://localhost:${FRONTEND_PORT}').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
         ]
       interval: 5s
       timeout: 5s

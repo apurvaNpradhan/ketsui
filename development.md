@@ -12,7 +12,7 @@ cp .env.docker.example .env.docker
 docker compose --env-file .env.docker up -d db
 ```
 
-All local variables live in the root `.env`. Use `BACKEND_DATABASE_URL` for FastAPI and `AUTH_DATABASE_URL` for Better Auth. Set `BETTER_AUTH_URL=http://localhost:5173` for the public Better Auth URL. The backend uses `BETTER_AUTH_JWKS_URL=http://localhost:5173/api/auth/jwks`; it never queries Better Auth tables.
+All local variables live in the root `.env`. `FRONTEND_PORT` controls the web app and `BACKEND_PORT` controls FastAPI. Use `BACKEND_DATABASE_URL` for FastAPI and `AUTH_DATABASE_URL` for Better Auth. Set `BETTER_AUTH_URL=http://localhost:$FRONTEND_PORT` for the public Better Auth URL. The backend uses `BETTER_AUTH_JWKS_URL=http://localhost:$FRONTEND_PORT/api/auth/jwks`; it never queries Better Auth tables.
 
 Start the backend:
 
@@ -20,7 +20,7 @@ Start the backend:
 cd apps/server
 uv sync
 uv run alembic upgrade head
-uv run uvicorn app.main:app --reload
+bash scripts/start.sh --reload
 ```
 
 Start the web app separately:
@@ -30,7 +30,7 @@ pnpm install
 pnpm --filter @repo/web dev
 ```
 
-The frontend calls `/api/*`; TanStack Start proxies those requests using the server-only `FASTAPI_ORIGIN=http://localhost:8000`. In Compose, that value is `http://backend:8000`.
+The frontend calls `/api/*`; TanStack Start proxies those requests using the server-only `FASTAPI_ORIGIN` origin. In local development, use `http://localhost:$BACKEND_PORT`; in Compose, use `http://backend:$BACKEND_PORT`.
 
 ## Compose
 
@@ -39,7 +39,7 @@ cp .env.docker.example .env.docker
 docker compose --env-file .env.docker up --build
 ```
 
-The Compose services are `db`, `backend`, and `frontend`. The web app is served on host port 5173 (container port 3000), and FastAPI on port 8000. The init script is only run when PostgreSQL creates a fresh data directory. Do not use it as a data migration for an existing `app` or `tanstarter` database.
+The Compose services are `db`, `backend`, and `frontend`. Their ports come from `BACKEND_PORT` and `FRONTEND_PORT` in `.env`. The init script is only run when PostgreSQL creates a fresh data directory. Do not use it as a data migration for an existing `app` or `tanstarter` database.
 
 ## Checks
 

@@ -35,4 +35,4 @@ COPY --from=build /app/apps/web/package.json ./apps/web/package.json
 COPY --from=build /app/apps/web/.output ./apps/web/.output
 
 WORKDIR /app
-CMD ["node", "apps/web/.output/server/index.mjs"]
+CMD ["sh", "-c", "NITRO_PORT=\"${PORT:-${FRONTEND_PORT:?FRONTEND_PORT must be set}}\" node apps/web/.output/server/index.mjs"]
