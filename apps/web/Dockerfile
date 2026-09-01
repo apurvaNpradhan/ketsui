@@ -1,4 +1,4 @@
-FROM node:24.20.0-bookworm-slim AS build
+FROM node:26.8.1-bookworm-slim AS build
 
 RUN apt-get update \
   && apt-get install --no-install-recommends -y git \
@@ -18,7 +18,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts \
 COPY . .
 RUN pnpm exec vp run build
 
-FROM node:24.20.0-bookworm-slim AS runtime
+FROM node:26.8.1-bookworm-slim AS runtime
 
 RUN npm install --global pnpm@12.2.0 \
   && useradd --create-home --uid 10001 appuser
