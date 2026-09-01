@@ -11,7 +11,11 @@ from pydantic import BaseModel, ValidationError
 from app.config import settings
 
 bearer_scheme = HTTPBearer(auto_error=False)
-jwks_client = PyJWKClient(str(settings.BETTER_AUTH_JWKS_URL), timeout=5)
+jwks_client = PyJWKClient(
+    str(settings.BETTER_AUTH_JWKS_URL),
+    headers={"User-Agent": "Ketsui-Backend/1.0"},
+    timeout=5,
+)
 _jwks_refresh_lock = Lock()
 _last_failed_jwks_refresh = 0.0
 # ponytail: global cooldown bounds JWKS abuse; use a bounded per-kid cache if rotation latency matters.
