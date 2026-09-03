@@ -10,7 +10,8 @@ COPY --from=ghcr.io/astral-sh/uv:0.9.26 /uv /uvx /bin/
 WORKDIR /app
 COPY pyproject.toml uv.lock .python-version ./
 COPY apps/server/pyproject.toml apps/server/alembic.ini ./apps/server/
-COPY apps/server/app ./apps/server/app
+COPY apps/server/src ./apps/server/src
+COPY apps/server/alembic ./apps/server/alembic
 COPY apps/server/scripts ./apps/server/scripts
 COPY apps/web/public ./apps/web/public
 

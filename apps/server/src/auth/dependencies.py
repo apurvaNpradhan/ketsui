@@ -1,0 +1,74 @@
+"""Authentication dependencies."""
+
+from threading import Lock
+from time import monotonic
+from typing import Annotated, Any
+
+import jwt
+from fastapi import Depends, HTTPException, Security, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jwt import PyJWKClient, PyJWKClientError
+from pydantic import ValidationError
+
+from src.auth.config import auth_settings
+from src.auth.schemas import CurrentUser
+
+bearer_scheme = HTTPBearer(auto_error=False)
+jwks_client = PyJWKClient(
+    auth_settings.BETTER_AUTH_JWKS_URL,
+    headers={"User-Agent": "Ketsui-Backend/1.0"},
+    timeout=5,
+)
+_jwks_refresh_lock = Lock()
+_last_failed_jwks_refresh = 0.0
+# ponytail: global cooldown bounds JWKS abuse; use a bounded per-kid cache if rotation latency matters.
+_JWKS_REFRESH_COOLDOWN_SECONDS = 5.0
+
+
+def get_current_user(
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None, Security(bearer_scheme)
+    ],
+) -> CurrentUser:
+    """Validate a Better Auth JWT and return its user claims.
+
+    This dependency stays synchronous because PyJWKClient performs blocking I/O;
+    FastAPI runs synchronous dependencies in its threadpool.
+    """
+
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    if credentials is None:
+        raise credentials_exception
+
+    try:
+        global _last_failed_jwks_refresh
+        with _jwks_refresh_lock:
+            if monotonic() - _last_failed_jwks_refresh < _JWKS_REFRESH_COOLDOWN_SECONDS:
+                raise jwt.InvalidTokenError("JWKS refresh temporarily unavailable")
+            signing_key = jwks_client.get_signing_key_from_jwt(credentials.credentials)
+            _last_failed_jwks_refresh = 0.0
+        claims: dict[str, Any] = jwt.decode(
+            credentials.credentials,
+            signing_key.key,
+            algorithms=["EdDSA"],
+            issuer=auth_settings.BETTER_AUTH_URL.rstrip("/"),
+            audience=auth_settings.BETTER_AUTH_URL.rstrip("/"),
+            options={"require": ["sub", "email", "name", "iss", "aud", "exp"]},
+        )
+        return CurrentUser(
+            id=claims["sub"],
+            email=claims["email"],
+            name=claims["name"],
+        )
+    except PyJWKClientError as exc:
+        _last_failed_jwks_refresh = monotonic()
+        raise credentials_exception from exc
+    except (jwt.PyJWTError, KeyError, TypeError, ValidationError, ValueError) as exc:
+        raise credentials_exception from exc
+
+
+CurrentUserDep = Annotated[CurrentUser, Depends(get_current_user)]

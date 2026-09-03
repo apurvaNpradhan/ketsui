@@ -3,7 +3,7 @@
 set -e
 set -x
 
-mypy app
-ty check app
-ruff check app
-ruff format app --check
+mypy src
+ty check src
+ruff check src tests
+ruff format src tests --check

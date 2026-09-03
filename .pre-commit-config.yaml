@@ -48,7 +48,7 @@ repos:
 
       - id: local-mypy
         name: mypy check
-        entry: uv run mypy apps/server/app
+        entry: uv run mypy apps/server/src
         require_serial: true
         language: unsupported
         files: ^apps/server/.*\.py$
@@ -56,16 +56,8 @@ repos:
 
       - id: local-ty
         name: ty check
-        entry: uv run ty check apps/server/app
+        entry: uv run ty check apps/server/src
         require_serial: true
         language: unsupported
         files: ^apps/server/.*\.py$
-        pass_filenames: false
-
-      - id: zizmor
-        name: zizmor
-        language: python
-        entry: uv run zizmor .
-        files: ^\.github/workflows/
-        require_serial: true
         pass_filenames: false

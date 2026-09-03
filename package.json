@@ -15,7 +15,7 @@
     "format:check": "vp fmt --check",
     "check": "vp check",
     "check:fix": "vp check --fix",
-    "prepare": "uv run prek install --hook-type pre-commit --overwrite",
+    "prepare": "git rev-parse --git-path hooks >/dev/null 2>&1 || exit 0; uv run prek install --hook-type pre-commit --overwrite",
     "deps": "vpx taze@latest -Ilwr --maturity-period 3",
     "fallow": "vpx fallow@latest --skip health",
     "tanstack": "vpx @tanstack/cli@latest",

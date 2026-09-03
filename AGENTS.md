@@ -29,6 +29,7 @@
 - [Testing](.agents/testing.md) - What to test, Vitest/Playwright boundaries, commands
 - [TypeScript conventions](.agents/typescript.md) - Casting rules, prefer type inference
 - [Workflow](.agents/workflow.md) - Workflow commands, validation approach
+- [FastAPI backend](apps/server/AGENTS.md) - Read when changing `apps/server/**`, including routes, auth, configuration, database, migrations, or Python tests.
 
 <!-- intent-skills:start -->
 

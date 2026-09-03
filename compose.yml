@@ -26,9 +26,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      BACKEND_DATABASE_URL: postgresql://backend_app:${BACKEND_DB_PASSWORD}@db:5432/backend_db
+      DATABASE_URL: postgresql://backend_app:${BACKEND_DB_PASSWORD}@db:5432/backend_db
       BACKEND_PORT: ${BACKEND_PORT:-8000}
-      BETTER_AUTH_JWKS_URL: ${BETTER_AUTH_JWKS_URL:-http://frontend:${FRONTEND_PORT:-5173}/api/auth/jwks}
+      BETTER_AUTH_JWKS_URL: http://frontend:${FRONTEND_PORT:-5173}/api/auth/jwks
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
       FASTAPI_ENV: ${FASTAPI_ENV:-development}
       PROJECT_NAME: ${PROJECT_NAME:-Ketsui}
@@ -43,9 +43,9 @@ services:
       backend-migrate:
         condition: service_completed_successfully
     environment:
-      BACKEND_DATABASE_URL: postgresql://backend_app:${BACKEND_DB_PASSWORD}@db:5432/backend_db
+      DATABASE_URL: postgresql://backend_app:${BACKEND_DB_PASSWORD}@db:5432/backend_db
       BACKEND_PORT: ${BACKEND_PORT:-8000}
-      BETTER_AUTH_JWKS_URL: ${BETTER_AUTH_JWKS_URL:-http://frontend:${FRONTEND_PORT:-5173}/api/auth/jwks}
+      BETTER_AUTH_JWKS_URL: http://frontend:${FRONTEND_PORT:-5173}/api/auth/jwks
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
       FASTAPI_ENV: ${FASTAPI_ENV:-development}
       FRONTEND_HOST: ${FRONTEND_HOST:-http://localhost:5173}

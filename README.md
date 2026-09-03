@@ -3,7 +3,7 @@
 This repository contains the Ketsui applications and shared packages:
 
 ```text
-apps/server   FastAPI, Pydantic, SQLModel, and Alembic
+apps/server   FastAPI, Pydantic, SQLAlchemy, and Alembic
 apps/web      TanStack Start frontend
 packages/auth Better Auth
 packages/db   Drizzle schema and migrations
@@ -16,11 +16,10 @@ Requirements: Node 24, pnpm 12.2.0, Python 3.14, uv, and Docker.
 
 ```sh
 cp .env.example .env
-cp .env.docker.example .env.docker
-# Set local secrets in both files
+# Set local secrets in .env
 pnpm install
 uv sync
-docker compose --env-file .env.docker up -d db
+docker compose --env-file .env up -d db
 ```
 
 Start the backend from `apps/server` and the web app from the repository root:
@@ -39,12 +38,12 @@ pnpm --filter @repo/web api:generate
 
 The schema source is `http://localhost:$BACKEND_PORT/openapi.json`; it is generated to `apps/web/src/lib/api/schema.d.ts`. The client uses `/api` and the TanStack Start wildcard route proxies to `FASTAPI_ORIGIN`. Set `FRONTEND_PORT` and `BACKEND_PORT` in `.env` to choose the app ports.
 
+FastAPI-specific backend conventions live in [`apps/server/AGENTS.md`](apps/server/AGENTS.md).
+
 ## Compose
 
 ```sh
-cp .env.docker.example .env.docker
-# Set real local values in .env.docker first
-docker compose --env-file .env.docker up --build
+docker compose --env-file .env up --build
 ```
 
 Compose runs one PostgreSQL 18 service plus one-shot `backend-migrate` and `auth-migrate` jobs before the application services. Its first-run init script creates `backend_db`/`backend_app` and `auth_db`/`auth_app`. Alembic runs only against the backend database, and Drizzle runs only against the auth database. Init scripts run only on an empty Postgres volume; legacy `app` and `tanstarter` data requires a separate dump/restore migration decision.
