@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from scalar_fastapi import add_scalar_reference
 from starlette.middleware.cors import CORSMiddleware
 
+from src.agent.router import router as agent_router
 from src.auth.router import router as auth_router
 from src.config import settings
 from src.db.session import close_db
@@ -51,6 +52,7 @@ if settings.FASTAPI_ENV == "development":
         allow_headers=["*"],
     )
 
+app.include_router(agent_router, prefix=settings.API_V1_STR)
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(utils_router, prefix=settings.API_V1_STR)
 

@@ -15,10 +15,20 @@
     "ui": "vpx shadcn@latest"
   },
   "dependencies": {
+    "@ag-ui/client": "catalog:",
+    "@assistant-ui/react": "catalog:",
+    "@assistant-ui/react-ag-ui": "catalog:",
+    "@assistant-ui/react-markdown": "catalog:",
+    "@assistant-ui/react-streamdown": "catalog:",
+    "@base-ui/react": "catalog:",
     "@fontsource-variable/inter": "catalog:",
     "@repo/auth": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/ui": "workspace:*",
+    "@streamdown/cjk": "catalog:",
+    "@streamdown/code": "catalog:",
+    "@streamdown/math": "catalog:",
+    "@streamdown/mermaid": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
@@ -30,6 +40,7 @@
     "openapi-react-query": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "streamdown": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

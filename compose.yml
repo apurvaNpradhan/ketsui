@@ -5,7 +5,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       BACKEND_DB_PASSWORD: ${BACKEND_DB_PASSWORD:?BACKEND_DB_PASSWORD must be set}
+      BACKEND_MIGRATION_DB_PASSWORD: ${BACKEND_MIGRATION_DB_PASSWORD:?BACKEND_MIGRATION_DB_PASSWORD must be set}
       AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:?AUTH_DB_PASSWORD must be set}
+      AUTH_MIGRATION_DB_PASSWORD: ${AUTH_MIGRATION_DB_PASSWORD:?AUTH_MIGRATION_DB_PASSWORD must be set}
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -27,6 +29,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://backend_app:${BACKEND_DB_PASSWORD}@db:5432/backend_db
+      DATABASE_MIGRATION_URL: postgresql://backend_migration_user:${BACKEND_MIGRATION_DB_PASSWORD}@db:5432/backend_db
       BACKEND_PORT: ${BACKEND_PORT:-8000}
       BETTER_AUTH_JWKS_URL: http://frontend:${FRONTEND_PORT:-5173}/api/auth/jwks
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
@@ -49,6 +52,9 @@ services:
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
       FASTAPI_ENV: ${FASTAPI_ENV:-development}
       FRONTEND_HOST: ${FRONTEND_HOST:-http://localhost:5173}
+      AI_ENDPOINT: ${AI_ENDPOINT:-https://api.openai.com/v1}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-gpt-4o-mini}
       PROJECT_NAME: ${PROJECT_NAME:-Ketsui}
     command: ["bash", "scripts/start.sh"]
     ports:
@@ -74,13 +80,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      AUTH_DATABASE_URL: postgresql://auth_app:${AUTH_DB_PASSWORD}@db:5432/auth_db
-    command:
-      [
-        "sh",
-        "-c",
-        "cd packages/db && node ../../node_modules/.pnpm/drizzle-kit@*/node_modules/drizzle-kit/bin.cjs migrate",
-      ]
+      AUTH_MIGRATION_DATABASE_URL: postgresql://auth_migration_user:${AUTH_MIGRATION_DB_PASSWORD}@db:5432/auth_db
+    command: ["pnpm", "--filter", "@repo/db", "db:migrate"]
     restart: "no"
 
   frontend:

@@ -9,6 +9,7 @@
   "exports": {
     "./*": "./*.ts",
     "./styles/base.css": "./styles/base.css",
+    "./lib/surfaces": "./lib/surfaces.tsx",
     "./lib/theme-provider": "./lib/theme-provider.tsx",
     "./components/*": "./components/*.tsx"
   },
@@ -16,12 +17,17 @@
     "ui": "vpx shadcn@latest"
   },
   "dependencies": {
+    "@assistant-ui/react": "0.15.17",
+    "@assistant-ui/react-markdown": "catalog:",
     "@base-ui/react": "catalog:",
     "class-variance-authority": "catalog:",
     "cnfast": "catalog:",
     "lucide-react": "catalog:",
+    "remark-gfm": "catalog:",
     "shadcn": "catalog:",
-    "tw-animate-css": "catalog:"
+    "tw-animate-css": "catalog:",
+    "tw-shimmer": "catalog:",
+    "zustand": "catalog:"
   },
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",

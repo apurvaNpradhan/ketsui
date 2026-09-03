@@ -22,11 +22,13 @@ The API is available at `http://localhost:$BACKEND_PORT`.
 - Scalar API reference: `http://localhost:$BACKEND_PORT/docs`
 - Health check: `http://localhost:$BACKEND_PORT/v1/utils/health-check/`
 - Authenticated user: `http://localhost:$BACKEND_PORT/v1/users/me`
+- AG-UI agent: `POST http://localhost:$BACKEND_PORT/v1/agent/`
 
-Set `BACKEND_PORT`, `DATABASE_URL`, `BETTER_AUTH_JWKS_URL`, and
-`BETTER_AUTH_URL` in the root `.env`. The backend validates Better Auth JWT
-claims and does not access the auth database. In production, use HTTPS for the
-Better Auth URLs.
+Set `BACKEND_PORT`, `DATABASE_URL`, `BETTER_AUTH_JWKS_URL`, `BETTER_AUTH_URL`,
+`AI_ENDPOINT`, `AI_API_KEY`, and `AI_MODEL` in the root `.env`. The agent uses
+an OpenAI-compatible Chat Completions endpoint and requires a Bearer token.
+The backend validates Better Auth JWT claims and does not access the auth
+database. In production, use HTTPS for the Better Auth URLs.
 
 API documentation is enabled in development and staging, and disabled in
 production.
@@ -54,6 +56,7 @@ uv run alembic revision --autogenerate -m "Describe the change"
 uv run alembic upgrade head
 ```
 
-Alembic applies only to `backend_db` and reads `DATABASE_URL` from the root
-environment. The migration CLI uses a synchronous SQLAlchemy connection; the
-FastAPI application uses asynchronous sessions.
+Alembic applies only to `backend_db` and uses `DATABASE_MIGRATION_URL` when it
+is set, falling back to `DATABASE_URL`. The migration CLI uses a synchronous
+SQLAlchemy connection; the FastAPI application uses the runtime URL and
+asynchronous sessions.

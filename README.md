@@ -46,7 +46,7 @@ FastAPI-specific backend conventions live in [`apps/server/AGENTS.md`](apps/serv
 docker compose --env-file .env up --build
 ```
 
-Compose runs one PostgreSQL 18 service plus one-shot `backend-migrate` and `auth-migrate` jobs before the application services. Its first-run init script creates `backend_db`/`backend_app` and `auth_db`/`auth_app`. Alembic runs only against the backend database, and Drizzle runs only against the auth database. Init scripts run only on an empty Postgres volume; legacy `app` and `tanstarter` data requires a separate dump/restore migration decision.
+Compose runs one PostgreSQL 18 service plus one-shot `backend-migrate` and `auth-migrate` jobs before the application services. Its first-run init script creates separate runtime and migration roles for `backend_db` and `auth_db`; runtime roles get data access while migration roles own the schemas. Alembic runs only against the backend database, and Drizzle runs only against the auth database. Init scripts run only on an empty Postgres volume; existing volumes need a one-time role/grant migration before adopting this setup.
 
 ## Auth
 

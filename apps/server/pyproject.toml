@@ -5,10 +5,12 @@ description = "Ketsui backend"
 requires-python = ">=3.14,<4.0"
 dependencies = [
   "fastapi>=0.141.1,<1.0.0",
+  "httpx>=0.27.0,<1.0.0",
   "uvicorn[standard]>=0.30.0,<1.0.0",
   "alembic<2.0.0,>=1.12.1",
   "psycopg[binary]>=3.3.4,<4.0.0",
   "sqlalchemy>=2.0.0,<3.0.0",
+  "pydantic-ai-slim[ag-ui,openai]>=2.35.1",
   "pydantic-settings<3.0.0,>=2.2.1",
   "PyJWT[crypto]>=2.10.0,<3.0.0",
   "scalar-fastapi>=1.9.0",

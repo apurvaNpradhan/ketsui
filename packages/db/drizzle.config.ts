@@ -7,8 +7,10 @@ import type { Config } from "drizzle-kit";
 const envFile = "../../.env";
 if (existsSync(envFile)) loadEnvFile(envFile);
 
-const authDatabaseUrl = process.env.AUTH_DATABASE_URL;
-if (!authDatabaseUrl) throw new Error("AUTH_DATABASE_URL must be set");
+const authDatabaseUrl = process.env.AUTH_MIGRATION_DATABASE_URL ?? process.env.AUTH_DATABASE_URL;
+if (!authDatabaseUrl) {
+  throw new Error("AUTH_MIGRATION_DATABASE_URL or AUTH_DATABASE_URL must be set");
+}
 
 export default {
   out: "./migrations",

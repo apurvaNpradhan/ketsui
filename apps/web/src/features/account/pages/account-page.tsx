@@ -20,7 +20,7 @@ export function AccountPage() {
         <span className="mt-0.5 block font-mono text-xs">{user?.name}</span>
       </div>
       <div>
-        <h2 className="font-medium">Backend user profile</h2>
+        <h2 className="font-medium">Backend user </h2>
         <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
           <dt className="font-medium">ID</dt>
           <dd className="font-mono">{backendUser.id}</dd>

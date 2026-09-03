@@ -112,6 +112,15 @@ async def test_current_user_requires_authentication_at_http_boundary(
 
 
 @pytest.mark.asyncio
+async def test_agent_requires_authentication_at_http_boundary(
+    client: httpx.AsyncClient,
+) -> None:
+    response = await client.post("/v1/agent/", json={})
+
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_current_user_response_is_serialized_at_http_boundary(
     client: httpx.AsyncClient,
 ) -> None:
@@ -153,6 +162,17 @@ def test_production_requires_non_default_auth_urls() -> None:
         auth_settings(BETTER_AUTH_URL="http://localhost:5173")
     with pytest.raises(ValueError):
         auth_settings(BETTER_AUTH_JWKS_URL="http://auth.example.com/api/auth/jwks")
+
+
+def test_migration_database_url_uses_psycopg_driver() -> None:
+    configured = settings(
+        DATABASE_MIGRATION_URL=(
+            "postgresql://backend_migration_user:secure-password@"
+            "localhost:5432/backend_db"
+        )
+    )
+
+    assert str(configured.DATABASE_MIGRATION_URL).startswith("postgresql+psycopg://")
 
 
 def test_production_rejects_documented_database_password_placeholders() -> None:

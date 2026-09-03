@@ -23,10 +23,15 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Ketsui"
     BACKEND_PORT: int = 8000
     DATABASE_URL: PostgresDsn
+    # Used only by Alembic; the application keeps using DATABASE_URL.
+    DATABASE_MIGRATION_URL: PostgresDsn | None = None
 
-    @field_validator("DATABASE_URL", mode="before")
+    @field_validator("DATABASE_URL", "DATABASE_MIGRATION_URL", mode="before")
     @classmethod
-    def _use_psycopg_driver(cls, value: str | PostgresDsn) -> str:
+    def _use_psycopg_driver(cls, value: str | PostgresDsn | None) -> str | None:
+        if value is None:
+            return None
+
         database_url = str(value)
         for scheme in ("postgres://", "postgresql://"):
             if database_url.startswith(scheme):

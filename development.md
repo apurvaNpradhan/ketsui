@@ -12,7 +12,7 @@ cp .env.example .env
 docker compose --env-file .env up -d db
 ```
 
-The root `.env` is used by both host development and Docker Compose. Compose derives container-only database and service URLs in `compose.yml`; the host-only URLs in `.env` are ignored there. `FRONTEND_PORT` controls the web app and `BACKEND_PORT` controls FastAPI. Use `DATABASE_URL` for FastAPI and `AUTH_DATABASE_URL` for Better Auth. Set `BETTER_AUTH_URL=http://localhost:$FRONTEND_PORT` for the public Better Auth URL. The backend uses `BETTER_AUTH_JWKS_URL=http://localhost:$FRONTEND_PORT/api/auth/jwks` locally and an internal frontend URL in Compose; it never queries Better Auth tables.
+The root `.env` is used by both host development and Docker Compose. Compose derives container-only database and service URLs in `compose.yml`; the host-only URLs in `.env` are ignored there. `DATABASE_URL` and `AUTH_DATABASE_URL` are runtime URLs; `DATABASE_MIGRATION_URL` and `AUTH_MIGRATION_DATABASE_URL` are used by the migration tools. `FRONTEND_PORT` controls the web app and `BACKEND_PORT` controls FastAPI. Set `BETTER_AUTH_URL=http://localhost:$FRONTEND_PORT` for the public Better Auth URL. The backend uses `BETTER_AUTH_JWKS_URL=http://localhost:$FRONTEND_PORT/api/auth/jwks` locally and an internal frontend URL in Compose; it never queries Better Auth tables.
 
 Start the backend:
 

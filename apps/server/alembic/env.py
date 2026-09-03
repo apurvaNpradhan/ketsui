@@ -2,9 +2,9 @@
 
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+from alembic import context
 from src.config import settings
 from src.models import Base
 
@@ -19,7 +19,7 @@ target_metadata = Base.metadata
 def get_url() -> str:
     """Get the synchronous migration URL."""
 
-    return str(settings.DATABASE_URL)
+    return str(settings.DATABASE_MIGRATION_URL or settings.DATABASE_URL)
 
 
 def run_migrations_offline() -> None:
