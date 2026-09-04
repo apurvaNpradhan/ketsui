@@ -2,7 +2,16 @@
 
 import type { ToolCallMessagePartComponent } from "@assistant-ui/react";
 import { defineToolkit } from "@assistant-ui/react";
-import { CloudSunIcon, DropletsIcon, Loader2Icon, MapPinIcon, WindIcon } from "lucide-react";
+import {
+  CheckIcon,
+  CloudSunIcon,
+  DropletsIcon,
+  Loader2Icon,
+  MapPinIcon,
+  ShieldAlertIcon,
+  WindIcon,
+  XIcon,
+} from "lucide-react";
 
 export type WeatherArgs = {
   city: string;
@@ -26,7 +35,59 @@ export const WeatherToolUI: ToolCallMessagePartComponent<WeatherArgs, WeatherRes
   args,
   result,
   status,
+  approval,
+  respondToApproval,
 }) => {
+  if (approval && approval.approved === undefined && !approval.resolution) {
+    return (
+      <section
+        aria-label="Weather permission request"
+        className="w-full max-w-sm rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4"
+      >
+        <div className="flex items-start gap-3">
+          <ShieldAlertIcon className="mt-0.5 size-5 shrink-0 text-amber-600" aria-hidden />
+          <div className="min-w-0">
+            <p className="font-medium">Allow weather lookup?</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Ketsui wants to check the current weather in {args.city}.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => respondToApproval({ approved: true })}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/80 focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none"
+          >
+            <CheckIcon className="size-4" aria-hidden />
+            Allow
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              respondToApproval({
+                approved: false,
+                reason: "Weather lookup declined.",
+              })
+            }
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none"
+          >
+            <XIcon className="size-4" aria-hidden />
+            Not now
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (approval?.approved === false) {
+    return (
+      <div className="rounded-xl border border-muted bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+        Weather lookup declined.
+      </div>
+    );
+  }
+
   if (status.type === "running") {
     return (
       <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">

@@ -16,7 +16,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts \
   && pnpm rebuild esbuild
 
 COPY . .
-RUN pnpm exec vp run build
+RUN pnpm exec nx run web:build
 
 FROM node:24.20.0-bookworm-slim AS runtime
 

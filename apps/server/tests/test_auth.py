@@ -157,11 +157,40 @@ def auth_settings(**overrides: Any) -> AuthSettings:
     return AuthSettings(_env_file=None, **values)  # type: ignore[call-arg]
 
 
-def test_production_requires_non_default_auth_urls() -> None:
+def test_production_requires_public_https_auth_url() -> None:
     with pytest.raises(ValueError):
         auth_settings(BETTER_AUTH_URL="http://localhost:5173")
     with pytest.raises(ValueError):
-        auth_settings(BETTER_AUTH_JWKS_URL="http://auth.example.com/api/auth/jwks")
+        auth_settings(BETTER_AUTH_URL="http://auth.example.com")
+
+
+@pytest.mark.parametrize(
+    "url", ["https://10.0.0.1", "https://127.0.0.2", "https://[::1]"]
+)
+def test_production_rejects_non_public_auth_ip_addresses(url: str) -> None:
+    with pytest.raises(ValueError):
+        auth_settings(BETTER_AUTH_URL=url)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://localhost:5173/api/auth/jwks",
+        "http://127.0.0.2:5173/api/auth/jwks",
+        "http://[::1]:5173/api/auth/jwks",
+    ],
+)
+def test_production_rejects_loopback_jwks_urls(url: str) -> None:
+    with pytest.raises(ValueError):
+        auth_settings(BETTER_AUTH_JWKS_URL=url)
+
+
+def test_production_allows_private_jwks_url() -> None:
+    configured = auth_settings(
+        BETTER_AUTH_JWKS_URL="http://frontend:5173/api/auth/jwks"
+    )
+
+    assert configured.BETTER_AUTH_JWKS_URL == "http://frontend:5173/api/auth/jwks"
 
 
 def test_migration_database_url_uses_psycopg_driver() -> None:

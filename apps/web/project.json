@@ -1,0 +1,65 @@
+{
+  "name": "web",
+  "projectType": "application",
+  "sourceRoot": "apps/web/src",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run dev", "cwd": "apps/web" }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/.output"],
+      "options": { "command": "cross-env NODE_ENV=production vite build", "cwd": "apps/web" }
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run preview",
+        "cwd": "apps/web"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --env-file-if-exists=../../.env --input-type=module -e \"process.env.NITRO_PORT = process.env.PORT || process.env.FRONTEND_PORT; await import('./.output/server/index.mjs')\"",
+        "cwd": "apps/web"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm --dir apps/web exec tsc --noEmit -p tsconfig.json" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec oxlint --config .oxlintrc.json --type-aware --type-check apps/web"
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxfmt apps/web" }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxfmt --check apps/web" }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec vitest run --config vitest.config.ts", "cwd": "apps/web" }
+    },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": { "command": "pnpm exec playwright test --pass-with-no-tests", "cwd": "apps/web" }
+    },
+    "api:generate": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm run --dir apps/web api:generate" }
+    },
+    "ui": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm dlx shadcn@latest", "cwd": "apps/web" }
+    }
+  }
+}

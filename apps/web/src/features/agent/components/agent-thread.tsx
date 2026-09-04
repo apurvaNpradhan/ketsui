@@ -1,5 +1,4 @@
 import {
-  ActionBarMorePrimitive,
   ActionBarPrimitive,
   AuiIf,
   ComposerPrimitive,
@@ -22,7 +21,6 @@ import {
   CheckIcon,
   ChevronRightIcon,
   CopyIcon,
-  DownloadIcon,
   Loader2Icon,
   MenuIcon,
   MoreHorizontalIcon,
@@ -32,10 +30,20 @@ import {
   SquareIcon,
   TrashIcon,
 } from "lucide-react";
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { ConversationMapAui } from "./elements/conversation-map";
+import { DaySeparator, isSameCalendarDay } from "./elements/day-separator";
 import { MessageError } from "./elements/error-state";
+import { GenerationLoader } from "./elements/loading-state";
 import { MessageBranches } from "./elements/message-branches";
 
 const isNewChatView = (state: AssistantState) =>
@@ -275,6 +283,7 @@ function AgentThreadMore({ onRename }: { onRename: () => void }) {
 
 export function AgentThread() {
   const isEmpty = useAuiState(isNewChatView);
+  const messages = useAuiState((state) => state.thread.messages);
 
   return (
     <ThreadPrimitive.Root className="flex h-full flex-col">
@@ -303,8 +312,19 @@ export function AgentThread() {
           <ThreadPrimitive.Messages>
             {({ message }) => {
               if (message.composer.isEditing) return <AgentEditComposer />;
-              if (message.role === "user") return <AgentUserMessage />;
-              if (message.role === "assistant") return <AgentAssistantMessage />;
+
+              const messageIndex = messages.findIndex((item) => item.id === message.id);
+              const previousMessage = messages[messageIndex - 1];
+              const showDate =
+                !previousMessage ||
+                !isSameCalendarDay(previousMessage.createdAt, message.createdAt);
+
+              if (message.role === "user") {
+                return <AgentUserMessage createdAt={message.createdAt} showDate={showDate} />;
+              }
+              if (message.role === "assistant") {
+                return <AgentAssistantMessage createdAt={message.createdAt} showDate={showDate} />;
+              }
               return null;
             }}
           </ThreadPrimitive.Messages>
@@ -416,17 +436,25 @@ function AgentEditComposer() {
   );
 }
 
-function AgentUserMessage() {
+function AgentUserMessage({ createdAt, showDate }: { createdAt: Date; showDate: boolean }) {
   return (
-    <MessagePrimitive.Root data-role="user" className="flex w-full flex-col items-end">
+    <MessagePrimitive.Root data-role="user" className="group flex w-full flex-col items-end">
+      {showDate ? <DaySeparator date={createdAt} /> : null}
       <div className="max-w-[85%] rounded-2xl bg-muted px-4 py-2 text-[15px] leading-6 wrap-break-word">
         <MessagePrimitive.Parts />
       </div>
       <ActionBarPrimitive.Root
         hideWhenRunning
-        autohide="not-last"
-        className="mt-1 flex items-center gap-1 self-end"
+        className="mt-1 flex items-center gap-1 self-end opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       >
+        <ActionBarPrimitive.Copy aria-label="Copy message" className={actionButtonClass}>
+          <AuiIf condition={(state) => state.message.isCopied}>
+            <CheckIcon className="size-4" />
+          </AuiIf>
+          <AuiIf condition={(state) => !state.message.isCopied}>
+            <CopyIcon className="size-4" />
+          </AuiIf>
+        </ActionBarPrimitive.Copy>
         <ActionBarPrimitive.Edit aria-label="Edit message" className={actionButtonClass}>
           <PencilIcon className="size-4" />
         </ActionBarPrimitive.Edit>
@@ -435,26 +463,39 @@ function AgentUserMessage() {
   );
 }
 
-function AgentAssistantMessage() {
+function AgentAssistantMessage({ createdAt, showDate }: { createdAt: Date; showDate: boolean }) {
+  const hasToolCalls = useAuiState((state) =>
+    state.message.content.some((part) => part.type === "tool-call"),
+  );
+  const messageStatus = useAuiState((state) => state.message.status?.type);
+  const isMessageRunning = messageStatus === "running";
+  const timing = useMessageTiming();
+
   return (
     <MessagePrimitive.Root
       data-role="assistant"
       className="w-full text-[15px] leading-relaxed wrap-break-word"
     >
+      {showDate ? <DaySeparator date={createdAt} /> : null}
+      <AgentLoadingState />
       <MessagePrimitive.GroupedParts groupBy={groupAssistantParts}>
         {({ part, children }) => {
           switch (part.type) {
             case "group-chainOfThought":
-              return <div>{children}</div>;
+              return hasToolCalls ? <div>{children}</div> : null;
             case "group-reasoning":
+              if (!hasToolCalls) return null;
               return (
-                <details open={part.status.type === "running"} className="my-2">
-                  <summary className="group flex cursor-pointer list-none items-center gap-2 font-mono text-xs text-muted-foreground outline-none focus-visible:underline">
-                    <ChevronRightIcon className="size-3 transition-transform group-open:rotate-90" />
-                    {part.status.type === "running" ? "Thinking" : "Reasoning"}
-                  </summary>
-                  <div className={disclosureContentClass}>{children}</div>
-                </details>
+                <AgentReasoningGroup
+                  running={part.status.type === "running"}
+                  showTiming={messageStatus === "complete"}
+                  completedDuration={timing?.totalStreamTime}
+                  initialStartTime={
+                    part.indices[0] === 0 && isMessageRunning ? timing?.streamStartTime : undefined
+                  }
+                >
+                  {children}
+                </AgentReasoningGroup>
               );
             case "group-tool":
               if (part.indices.length === 1) return <>{children}</>;
@@ -470,9 +511,7 @@ function AgentAssistantMessage() {
             case "group-source":
               return null;
             case "text":
-              return part.text === "" && part.status?.type === "running" ? (
-                <ToolTrace label="Thinking" running />
-              ) : (
+              return part.text === "" ? null : (
                 <StreamdownTextPrimitive
                   defer
                   className="[&_a]:underline [&_a]:underline-offset-2 [&_blockquote]:my-3 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_h1]:mt-4 [&_h1]:text-xl [&_h1]:font-semibold [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_ol]:my-2 [&_p]:my-2 [&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:bg-muted [&_pre]:p-3 [&_strong]:font-semibold [&_ul]:my-2"
@@ -494,11 +533,83 @@ function AgentAssistantMessage() {
 
       <AgentSources />
       <MessageError />
-      <div className="mt-2 flex items-center gap-1.5">
-        <AgentAssistantActions />
-      </div>
+      <AuiIf condition={(state) => state.message.isLast}>
+        <div className="mt-2 flex items-center gap-1.5">
+          <AgentAssistantActions />
+        </div>
+      </AuiIf>
     </MessagePrimitive.Root>
   );
+}
+
+function AgentReasoningGroup({
+  children,
+  running,
+  showTiming,
+  completedDuration,
+  initialStartTime,
+}: {
+  children: ReactNode;
+  running: boolean;
+  showTiming: boolean;
+  completedDuration?: number;
+  initialStartTime?: number;
+}) {
+  const [startedAt] = useState(() => initialStartTime ?? (running ? Date.now() : null));
+  const [duration, setDuration] = useState<number | null>(
+    () =>
+      completedDuration ?? (initialStartTime !== undefined ? Date.now() - initialStartTime : null),
+  );
+
+  useEffect(() => {
+    if (startedAt === null) return;
+    const updateDuration = () => setDuration(Date.now() - startedAt);
+
+    if (!running || !showTiming) {
+      if (!running && showTiming) updateDuration();
+      return;
+    }
+
+    updateDuration();
+    const interval = window.setInterval(updateDuration, 100);
+    return () => window.clearInterval(interval);
+  }, [running, showTiming, startedAt]);
+
+  return (
+    <details open={running} className="my-2">
+      <summary className="group flex cursor-pointer list-none items-center gap-2 text-xs text-muted-foreground outline-none focus-visible:underline">
+        <ChevronRightIcon className="size-3 transition-transform group-open:rotate-90" />
+        {running
+          ? "Working..."
+          : !showTiming || duration === null
+            ? "Work completed"
+            : `Worked for ${formatWorkDuration(duration)}`}
+      </summary>
+      <div className={disclosureContentClass}>{children}</div>
+    </details>
+  );
+}
+
+function AgentLoadingState() {
+  const isLoading = useAuiState(
+    (state) => state.message.status?.type === "running" && state.message.content.length === 0,
+  );
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const interval = window.setInterval(() => setTick((value) => value + 1), 120);
+    return () => window.clearInterval(interval);
+  }, [isLoading]);
+
+  return isLoading ? (
+    <GenerationLoader
+      label="Working..."
+      tick={tick}
+      className="flex-row items-center gap-2 py-1 text-xs [&>div]:gap-0.5 [&>div>span]:size-1.5"
+    />
+  ) : null;
 }
 
 function GenericToolTrace({ toolName, status }: ToolCallMessagePartProps) {
@@ -532,6 +643,15 @@ function isCited(text: string, url: string) {
   }
 }
 
+function isSafeSourceUrl(value: string) {
+  try {
+    const protocol = new URL(value).protocol;
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function AgentSources() {
   const content = useAuiState((state) => state.message.content);
   const text = content.flatMap((part) => (part.type === "text" ? [part.text] : [])).join("\n");
@@ -540,6 +660,7 @@ function AgentSources() {
     if (
       part.type !== "source" ||
       part.sourceType !== "url" ||
+      !isSafeSourceUrl(part.url) ||
       seen.has(part.url) ||
       !isCited(text, part.url)
     )
@@ -568,7 +689,6 @@ function AgentSources() {
 }
 
 function AgentAssistantActions() {
-  const timing = useMessageTiming();
   return (
     <ActionBarPrimitive.Root
       hideWhenRunning
@@ -593,46 +713,68 @@ function AgentAssistantActions() {
           <RefreshCwIcon className="size-4" />
         </ActionBarPrimitive.Reload>
       </AuiIf>
-      <ActionBarMorePrimitive.Root>
-        <ActionBarMorePrimitive.Trigger asChild>
-          <button type="button" aria-label="More response actions" className={actionButtonClass}>
-            <MoreHorizontalIcon className="size-4" />
-          </button>
-        </ActionBarMorePrimitive.Trigger>
-        <ActionBarMorePrimitive.Content
-          side="bottom"
-          align="start"
-          sideOffset={6}
-          className={menuContentClass}
-        >
-          <ActionBarPrimitive.ExportMarkdown asChild>
-            <ActionBarMorePrimitive.Item className={menuItemClass}>
-              <DownloadIcon className="size-4" />
-              Export as Markdown
-            </ActionBarMorePrimitive.Item>
-          </ActionBarPrimitive.ExportMarkdown>
-        </ActionBarMorePrimitive.Content>
-      </ActionBarMorePrimitive.Root>
-      {timing ? <AgentTiming timing={timing} /> : null}
     </ActionBarPrimitive.Root>
   );
 }
 
-function AgentTiming({ timing }: { timing: ReturnType<typeof useMessageTiming> }) {
-  if (!timing) return null;
-  const details = [
-    timing.totalStreamTime != null ? `${(timing.totalStreamTime / 1000).toFixed(1)}s` : null,
-    timing.tokensPerSecond != null ? `${timing.tokensPerSecond.toFixed(1)} tok/s` : null,
-  ].filter((detail) => detail !== null);
-  if (details.length === 0) return null;
-  return (
-    <span className="ml-1 text-[11px] text-muted-foreground/70 tabular-nums">
-      {details.join(" · ")}
-    </span>
-  );
+function formatWorkDuration(milliseconds: number) {
+  if (milliseconds < 60_000) return `${(milliseconds / 1000).toFixed(1)}s`;
+
+  const totalSeconds = Math.round(milliseconds / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}m${seconds > 0 ? ` ${seconds}s` : ""}`;
 }
 
 export function AgentMobileSidebar({ onClose }: { onClose: () => void }) {
+  const dialogRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+        'button, input, a[href], [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+
+      if (!dialogRef.current.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 md:hidden">
       <button
@@ -641,10 +783,19 @@ export function AgentMobileSidebar({ onClose }: { onClose: () => void }) {
         onClick={onClose}
         className="absolute inset-0 bg-black/30"
       />
-      <aside className="relative flex h-full w-72 flex-col border-r bg-background p-3 pt-5 shadow-xl">
+      <aside
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="conversation-history-title"
+        className="relative flex h-full w-72 flex-col border-r bg-background p-3 pt-5 shadow-xl"
+      >
         <div className="mb-4 flex items-center justify-between px-2">
-          <span className="text-sm font-medium">Conversation history</span>
+          <span id="conversation-history-title" className="text-sm font-medium">
+            Conversation history
+          </span>
           <button
+            ref={closeButtonRef}
             type="button"
             aria-label="Close conversation history"
             onClick={onClose}

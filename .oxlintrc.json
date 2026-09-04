@@ -1,0 +1,24 @@
+{
+  "$schema": "https://oxc.rs/schema/oxlint.json",
+  "plugins": ["typescript", "react", "react-perf", "jsx-a11y"],
+  "env": { "builtin": true, "node": true, "browser": true },
+  "options": { "typeAware": true, "typeCheck": true },
+  "categories": { "correctness": "warn" },
+  "rules": {
+    "no-deprecated": "warn",
+    "typescript/no-floating-promises": "off",
+    "typescript/no-misused-spread": "off",
+    "jsx-a11y/prefer-tag-over-role": "off"
+  },
+  "ignorePatterns": [
+    "dist",
+    ".wrangler",
+    ".vercel",
+    ".netlify",
+    ".output",
+    "build/",
+    "worker-configuration.d.ts",
+    ".serena/",
+    "scripts/"
+  ]
+}

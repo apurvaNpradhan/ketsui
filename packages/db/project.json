@@ -1,0 +1,35 @@
+{
+  "name": "db",
+  "projectType": "library",
+  "sourceRoot": "packages/db/src",
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm --dir packages/db exec tsc --noEmit -p tsconfig.json" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxlint --config .oxlintrc.json packages/db" }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxfmt packages/db" }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxfmt --check packages/db" }
+    },
+    "db": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm --dir packages/db run db" }
+    },
+    "db:migrate": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm --dir packages/db run db:migrate" }
+    },
+    "auth:generate": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm --dir packages/db run auth:generate" }
+    }
+  }
+}

@@ -18,16 +18,16 @@ repos:
         args: [--force-exclude]
   - repo: local
     hooks:
-      - id: local-vite-format
-        name: Vite+ format
-        entry: pnpm exec vp fmt --no-error-on-unmatched-pattern
+      - id: local-oxfmt
+        name: Oxfmt
+        entry: pnpm exec oxfmt --no-error-on-unmatched-pattern
         language: system
         types: [text]
         files: \.(js|jsx|ts|tsx|json|webmanifest|css)$
 
-      - id: local-typescript-check
+      - id: local-oxlint
         name: TypeScript check
-        entry: pnpm exec vp lint --type-aware --type-check
+        entry: pnpm exec oxlint --config .oxlintrc.json --type-aware --type-check
         language: system
         files: \.(js|jsx|ts|tsx)$
         pass_filenames: false

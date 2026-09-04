@@ -17,17 +17,16 @@ The root `.env` is used by both host development and Docker Compose. Compose der
 Start the backend:
 
 ```bash
-cd apps/server
 uv sync
-uv run alembic upgrade head
-bash scripts/start.sh --reload
+pnpm nx run server:migrate
+pnpm nx run server:dev
 ```
 
 Start the web app separately:
 
 ```bash
 pnpm install
-pnpm --filter @repo/web dev
+pnpm nx run web:dev
 ```
 
 The frontend calls `/api/*`; TanStack Start proxies those requests using the server-only `FASTAPI_ORIGIN` origin. In local development, use `http://localhost:$BACKEND_PORT`; in Compose, use `http://backend:$BACKEND_PORT`.
@@ -44,7 +43,6 @@ Compose runs `db`, one-shot `backend-migrate` and `auth-migrate` jobs, then `bac
 
 ```bash
 pnpm check
-uv run ruff check apps/server/src apps/server/tests
-uv run ruff format --check apps/server/src apps/server/tests
-uv run --directory apps/server pytest
+pnpm nx run-many -t lint typecheck format:check -p server
+pnpm nx run server:test
 ```

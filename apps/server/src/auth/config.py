@@ -1,5 +1,6 @@
 """Authentication configuration."""
 
+import ipaddress
 from pathlib import Path
 from typing import Literal
 
@@ -29,12 +30,39 @@ class AuthSettings(BaseSettings):
     @model_validator(mode="after")
     def _validate_production_urls(self) -> AuthSettings:
         if self.FASTAPI_ENV == "production":
-            if self.BETTER_AUTH_URL == "http://localhost:5173":
-                raise ValueError("BETTER_AUTH_URL must be set in production.")
-            if AnyHttpUrl(self.BETTER_AUTH_JWKS_URL).scheme != "https":
-                raise ValueError("BETTER_AUTH_JWKS_URL must use HTTPS in production.")
+            auth_url = AnyHttpUrl(self.BETTER_AUTH_URL)
+            auth_ip = _parse_ip_host(auth_url.host)
+            if (
+                auth_url.scheme != "https"
+                or auth_url.host == "localhost"
+                or (auth_ip is not None and not auth_ip.is_global)
+            ):
+                raise ValueError(
+                    "BETTER_AUTH_URL must be a public HTTPS URL in production."
+                )
+
+            # The JWKS endpoint may use the private Compose network while the issuer stays public.
+            jwks_url = AnyHttpUrl(self.BETTER_AUTH_JWKS_URL)
+            jwks_ip = _parse_ip_host(jwks_url.host)
+            if jwks_url.host == "localhost" or (
+                jwks_ip is not None and jwks_ip.is_loopback
+            ):
+                raise ValueError(
+                    "BETTER_AUTH_JWKS_URL must not point to localhost in production."
+                )
 
         return self
+
+
+def _parse_ip_host(
+    host: str | None,
+) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
+    if host is None:
+        return None
+    try:
+        return ipaddress.ip_address(host.strip("[]"))
+    except ValueError:
+        return None
 
 
 auth_settings = AuthSettings()  # type: ignore[call-arg]  # ty: ignore[missing-argument]

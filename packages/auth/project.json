@@ -1,0 +1,27 @@
+{
+  "name": "auth",
+  "projectType": "library",
+  "sourceRoot": "packages/auth/src",
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm --dir packages/auth exec tsc --noEmit -p tsconfig.json" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxlint --config .oxlintrc.json packages/auth" }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxfmt packages/auth" }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxfmt --check packages/auth" }
+    },
+    "auth:generate": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm nx run db:auth:generate" }
+    }
+  }
+}

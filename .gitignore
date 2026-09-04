@@ -1,9 +1,15 @@
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 node_modules/
+repos/
 
 # Local environment files
 .env
 .env.*
 !.env.example
 !.env.*.example
+
+.nx/
+.claude/worktrees
+.claude/settings.local.json

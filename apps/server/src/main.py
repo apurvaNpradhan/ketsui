@@ -1,6 +1,6 @@
 """FastAPI application entrypoint."""
 
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -23,7 +23,7 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncGenerator:
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     try:
         yield
     finally:

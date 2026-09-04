@@ -15,7 +15,7 @@ visibility: text().$type<ProductVisibility>().notNull().default("public");
 
 ## Generated Better Auth Schema
 
-- `packages/db/src/schema/auth.schema.ts` is generated from `packages/auth/src/auth.ts` by `vpr auth:generate`.
+- `packages/db/src/schema/auth.schema.ts` is generated from `packages/auth/src/auth.ts` by `pnpm nx run db:auth:generate`.
 - Do not directly edit the generated auth schema.
 - Add or change Better Auth-owned fields through the Better Auth config, then regenerate the schema and verify the resulting diff.
 - When the generator leaves a JSON field as `unknown`, validate and narrow it at the first application read boundary, then let that inferred type flow downstream. Do not add an application type annotation to the generated schema.

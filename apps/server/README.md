@@ -28,7 +28,8 @@ Set `BACKEND_PORT`, `DATABASE_URL`, `BETTER_AUTH_JWKS_URL`, `BETTER_AUTH_URL`,
 `AI_ENDPOINT`, `AI_API_KEY`, and `AI_MODEL` in the root `.env`. The agent uses
 an OpenAI-compatible Chat Completions endpoint and requires a Bearer token.
 The backend validates Better Auth JWT claims and does not access the auth
-database. In production, use HTTPS for the Better Auth URLs.
+database. In production, use a public HTTPS `BETTER_AUTH_URL`; Compose keeps
+`BETTER_AUTH_JWKS_URL` on the internal frontend network.
 
 API documentation is enabled in development and staging, and disabled in
 production.

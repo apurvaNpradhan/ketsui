@@ -37,7 +37,7 @@ const AuthAgentRoute = AuthAgentRouteImport.update({
   id: '/agent',
   path: '/agent',
   getParentRoute: () => AuthRouteRoute,
-} as any)
+} as any).lazy(() => import('./routes/_auth/agent.lazy').then((d) => d.Route))
 const AuthAppRouteRoute = AuthAppRouteRouteImport.update({
   id: '/app',
   path: '/app',
@@ -263,10 +263,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

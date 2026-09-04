@@ -1,0 +1,15 @@
+{
+  "name": "tsconfig",
+  "projectType": "library",
+  "sourceRoot": "tools/tsconfig",
+  "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxfmt tools/tsconfig" }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxfmt --check tools/tsconfig" }
+    }
+  }
+}
