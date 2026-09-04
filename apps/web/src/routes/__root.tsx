@@ -5,7 +5,12 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { formDevtoolsPlugin } from "@tanstack/react-form-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
-import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
+import {
+  createRootRouteWithContext,
+  HeadContent,
+  Scripts,
+  useRouter,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
 import appCss from "#/styles.css?url";
@@ -50,9 +55,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootDocument({ children }: { readonly children: React.ReactNode }) {
+  const nonce = useRouter().options.ssr?.nonce;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta property="csp-nonce" content={nonce} />
         <HeadContent />
       </head>
       <body>

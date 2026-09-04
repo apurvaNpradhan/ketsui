@@ -26,8 +26,6 @@ export default defineConfig({
             "Referrer-Policy": "strict-origin-when-cross-origin",
             "X-Frame-Options": "DENY",
             "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-            "Content-Security-Policy":
-              "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
           },
         },
       },

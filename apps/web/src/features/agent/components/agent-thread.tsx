@@ -729,6 +729,11 @@ function formatWorkDuration(milliseconds: number) {
 export function AgentMobileSidebar({ onClose }: { onClose: () => void }) {
   const dialogRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     const previouslyFocused = document.activeElement;
@@ -737,7 +742,7 @@ export function AgentMobileSidebar({ onClose }: { onClose: () => void }) {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== "Tab" || !dialogRef.current) return;
@@ -768,7 +773,7 @@ export function AgentMobileSidebar({ onClose }: { onClose: () => void }) {
       document.removeEventListener("keydown", handleKeyDown);
       if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 md:hidden">

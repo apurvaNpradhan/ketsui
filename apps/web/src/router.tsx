@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+import { getGlobalStartContext } from "@tanstack/react-start";
 
 import { DefaultCatchBoundary } from "#/components/errors/default-catch-boundary.tsx";
 import { DefaultNotFound } from "#/components/errors/default-not-found.tsx";
@@ -19,6 +20,7 @@ export function getRouter() {
 
   const router = createRouter({
     routeTree,
+    ssr: { nonce: getGlobalStartContext()?.nonce },
     context: { queryClient },
     defaultPreload: "intent",
     // react-query will handle data fetching & caching
