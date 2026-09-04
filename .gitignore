@@ -1,6 +1,8 @@
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 node_modules/
+repos/
 
 # Local environment files
 .env

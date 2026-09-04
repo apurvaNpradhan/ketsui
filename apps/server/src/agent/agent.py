@@ -5,7 +5,7 @@ from typing import Annotated, Any, Literal
 
 import httpx
 from pydantic import BaseModel, Field
-from pydantic_ai import Agent, RunContext
+from pydantic_ai import Agent, DeferredToolRequests, RunContext
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
@@ -45,11 +45,11 @@ model = OpenAIChatModel(
     ),
 )
 
-agent = Agent[AgentDeps, str](
+agent = Agent[AgentDeps, str | DeferredToolRequests](
     model,
     name="ketsui_steward",
     deps_type=AgentDeps,
-    output_type=str,
+    output_type=[str, DeferredToolRequests],
     instructions=(
         "You are a personal life steward. Be concise, practical, and warm. "
         "Help the user make plans, but never take an external action without "
@@ -98,7 +98,7 @@ _WEATHER_CONDITIONS = {
 }
 
 
-@agent.tool_plain(requires_approval=True)
+@agent.tool_plain
 async def get_weather(
     city: Annotated[str, Field(min_length=1, max_length=100)],
     unit: Literal["celsius", "fahrenheit"] = "celsius",

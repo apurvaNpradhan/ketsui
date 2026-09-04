@@ -72,3 +72,11 @@ release. Add a tool name to select part of the graph. For example, run
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
 <!--VITE PLUS END-->
+
+## Vendored repositories
+
+The project keeps local, gitignored source checkouts under `repos/` for agent reference.
+
+- Read `repos/assistant-ui/` for assistant-ui implementation patterns, examples, tests, and docs before using web search.
+- Treat `repos/assistant-ui/` as read-only reference material; application code must import the normal package dependency.
+- Update the checkout with `git -C repos/assistant-ui pull --ff-only` when fresh source is needed.
