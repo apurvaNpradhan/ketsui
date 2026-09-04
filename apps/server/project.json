@@ -1,0 +1,49 @@
+{
+  "name": "server",
+  "projectType": "application",
+  "sourceRoot": "apps/server/src",
+  "namedInputs": {
+    "python": [
+      "default",
+      "{workspaceRoot}/pyproject.toml",
+      "{workspaceRoot}/uv.lock",
+      "{workspaceRoot}/.python-version"
+    ]
+  },
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": { "command": "uv run --directory apps/server bash scripts/start.sh --reload" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "inputs": ["python", "^production"],
+      "options": {
+        "command": "uv run --directory apps/server mypy src && uv run --directory apps/server ty check src"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "inputs": ["python", "^production"],
+      "options": { "command": "uv run --directory apps/server ruff check src tests" }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "inputs": ["python"],
+      "options": { "command": "uv run --directory apps/server ruff format src tests --check" }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "inputs": ["python", "^production"],
+      "options": { "command": "uv run --directory apps/server pytest" }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": { "command": "uv run --directory apps/server ruff format src tests" }
+    },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "options": { "command": "uv run --directory apps/server alembic upgrade head" }
+    }
+  }
+}

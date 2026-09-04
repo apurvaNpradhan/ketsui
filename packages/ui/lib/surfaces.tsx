@@ -77,11 +77,13 @@ export function SwapLabel({
   children: [React.ReactNode, React.ReactNode];
   className?: string;
 }) {
-  const layers = [useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null)];
+  const firstLayer = useRef<HTMLSpanElement>(null);
+  const secondLayer = useRef<HTMLSpanElement>(null);
   const [width, setWidth] = useState<number | null>(null);
+  const layers = [firstLayer, secondLayer];
 
   useLayoutEffect(() => {
-    const target = layers[active]?.current;
+    const target = (active === 0 ? firstLayer : secondLayer).current;
     if (!target) return undefined;
     const measure = () => setWidth(Math.ceil(target.getBoundingClientRect().width));
     measure();

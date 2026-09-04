@@ -18,6 +18,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
+          cache: pnpm
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -33,13 +34,8 @@ jobs:
           pnpm install --frozen-lockfile
           uv sync --all-packages
 
-      - name: Check frontend
+      - name: Check workspace
         run: pnpm check
 
-      - name: Check backend
-        run: |
-          uv run ruff check apps/server/src apps/server/tests
-          uv run ruff format --check apps/server/src apps/server/tests
-
-      - name: Test backend
-        run: uv run --directory apps/server pytest
+      - name: Build frontend
+        run: pnpm nx run web:build

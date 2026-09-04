@@ -9,9 +9,6 @@
   "ignoreDependencies": [
     "@types/node",
     "oxc-transform-react",
-    "@tanstack/eslint-plugin-query",
-    "@tanstack/eslint-plugin-router",
-    "vite-plus",
   ],
   "ignoreExports": [{ "file": "**/*.mdx", "exports": ["*"] }],
   "rules": {

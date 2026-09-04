@@ -30,7 +30,15 @@ import {
   SquareIcon,
   TrashIcon,
 } from "lucide-react";
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { ConversationMapAui } from "./elements/conversation-map";
 import { DaySeparator, isSameCalendarDay } from "./elements/day-separator";
@@ -459,8 +467,9 @@ function AgentAssistantMessage({ createdAt, showDate }: { createdAt: Date; showD
   const hasToolCalls = useAuiState((state) =>
     state.message.content.some((part) => part.type === "tool-call"),
   );
+  const messageStatus = useAuiState((state) => state.message.status?.type);
+  const isMessageRunning = messageStatus === "running";
   const timing = useMessageTiming();
-  if (timing?.totalStreamTime == null) return null;
 
   return (
     <MessagePrimitive.Root
@@ -477,15 +486,16 @@ function AgentAssistantMessage({ createdAt, showDate }: { createdAt: Date; showD
             case "group-reasoning":
               if (!hasToolCalls) return null;
               return (
-                <details open={part.status.type === "running"} className="my-2">
-                  <summary className="group flex cursor-pointer list-none items-center gap-2 text-xs text-muted-foreground outline-none focus-visible:underline">
-                    <ChevronRightIcon className="size-3 transition-transform group-open:rotate-90" />
-                    {part.status.type === "running"
-                      ? "Working..."
-                      : `      Worked for ${formatWorkDuration(timing.totalStreamTime ?? 0)}`}
-                  </summary>
-                  <div className={disclosureContentClass}>{children}</div>
-                </details>
+                <AgentReasoningGroup
+                  running={part.status.type === "running"}
+                  showTiming={messageStatus === "complete"}
+                  completedDuration={timing?.totalStreamTime}
+                  initialStartTime={
+                    part.indices[0] === 0 && isMessageRunning ? timing?.streamStartTime : undefined
+                  }
+                >
+                  {children}
+                </AgentReasoningGroup>
               );
             case "group-tool":
               if (part.indices.length === 1) return <>{children}</>;
@@ -529,6 +539,54 @@ function AgentAssistantMessage({ createdAt, showDate }: { createdAt: Date; showD
         </div>
       </AuiIf>
     </MessagePrimitive.Root>
+  );
+}
+
+function AgentReasoningGroup({
+  children,
+  running,
+  showTiming,
+  completedDuration,
+  initialStartTime,
+}: {
+  children: ReactNode;
+  running: boolean;
+  showTiming: boolean;
+  completedDuration?: number;
+  initialStartTime?: number;
+}) {
+  const [startedAt] = useState(() => initialStartTime ?? (running ? Date.now() : null));
+  const [duration, setDuration] = useState<number | null>(
+    () =>
+      completedDuration ?? (initialStartTime !== undefined ? Date.now() - initialStartTime : null),
+  );
+
+  useEffect(() => {
+    if (startedAt === null) return;
+    const updateDuration = () => setDuration(Date.now() - startedAt);
+
+    if (!running || !showTiming) {
+      if (!running && showTiming) updateDuration();
+      return;
+    }
+
+    updateDuration();
+    const interval = window.setInterval(updateDuration, 100);
+    return () => window.clearInterval(interval);
+  }, [running, showTiming, startedAt]);
+
+  return (
+    <details open={running} className="my-2">
+      <summary className="group flex cursor-pointer list-none items-center gap-2 text-xs text-muted-foreground outline-none focus-visible:underline">
+        <ChevronRightIcon className="size-3 transition-transform group-open:rotate-90" />
+        {running
+          ? "Working..."
+          : !showTiming || duration === null
+            ? "Work completed"
+            : `Worked for ${formatWorkDuration(duration)}`}
+      </summary>
+      <div className={disclosureContentClass}>{children}</div>
+    </details>
   );
 }
 
@@ -585,6 +643,15 @@ function isCited(text: string, url: string) {
   }
 }
 
+function isSafeSourceUrl(value: string) {
+  try {
+    const protocol = new URL(value).protocol;
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function AgentSources() {
   const content = useAuiState((state) => state.message.content);
   const text = content.flatMap((part) => (part.type === "text" ? [part.text] : [])).join("\n");
@@ -593,6 +660,7 @@ function AgentSources() {
     if (
       part.type !== "source" ||
       part.sourceType !== "url" ||
+      !isSafeSourceUrl(part.url) ||
       seen.has(part.url) ||
       !isCited(text, part.url)
     )
@@ -659,6 +727,49 @@ function formatWorkDuration(milliseconds: number) {
 }
 
 export function AgentMobileSidebar({ onClose }: { onClose: () => void }) {
+  const dialogRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+        'button, input, a[href], [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+
+      if (!dialogRef.current.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
+  }, [onClose]);
+
   return (
     <div className="fixed inset-0 z-50 md:hidden">
       <button
@@ -667,10 +778,19 @@ export function AgentMobileSidebar({ onClose }: { onClose: () => void }) {
         onClick={onClose}
         className="absolute inset-0 bg-black/30"
       />
-      <aside className="relative flex h-full w-72 flex-col border-r bg-background p-3 pt-5 shadow-xl">
+      <aside
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="conversation-history-title"
+        className="relative flex h-full w-72 flex-col border-r bg-background p-3 pt-5 shadow-xl"
+      >
         <div className="mb-4 flex items-center justify-between px-2">
-          <span className="text-sm font-medium">Conversation history</span>
+          <span id="conversation-history-title" className="text-sm font-medium">
+            Conversation history
+          </span>
           <button
+            ref={closeButtonRef}
             type="button"
             aria-label="Close conversation history"
             onClick={onClose}

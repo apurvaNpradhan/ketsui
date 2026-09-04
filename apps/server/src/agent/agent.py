@@ -98,7 +98,7 @@ _WEATHER_CONDITIONS = {
 }
 
 
-@agent.tool_plain
+@agent.tool_plain(requires_approval=True)
 async def get_weather(
     city: Annotated[str, Field(min_length=1, max_length=100)],
     unit: Literal["celsius", "fahrenheit"] = "celsius",

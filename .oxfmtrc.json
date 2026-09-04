@@ -1,0 +1,37 @@
+{
+  "$schema": "https://oxc.rs/schema/oxfmt.json",
+  "tabWidth": 2,
+  "semi": true,
+  "printWidth": 100,
+  "singleQuote": false,
+  "endOfLine": "lf",
+  "trailingComma": "all",
+  "sortImports": {},
+  "sortTailwindcss": {
+    "stylesheet": "./packages/ui/styles/base.css",
+    "attributes": ["class", "className"],
+    "functions": ["clsx", "cn", "cva", "tw"]
+  },
+  "sortPackageJson": true,
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    "package-lock.json",
+    "yarn.lock",
+    "routeTree.gen.ts",
+    "schema.d.ts",
+    "auth.schema.ts",
+    ".tanstack-start/",
+    ".tanstack/",
+    "drizzle/",
+    "migrations/",
+    ".drizzle/",
+    ".cache",
+    ".serena/",
+    "worker-configuration.d.ts",
+    ".vercel",
+    ".output",
+    ".wrangler",
+    ".netlify",
+    "dist"
+  ]
+}

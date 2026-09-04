@@ -14,10 +14,10 @@
     "./components/*": "./components/*.tsx"
   },
   "scripts": {
-    "ui": "vpx shadcn@latest"
+    "ui": "pnpm exec shadcn"
   },
   "dependencies": {
-    "@assistant-ui/react": "0.15.17",
+    "@assistant-ui/react": "catalog:",
     "@assistant-ui/react-markdown": "catalog:",
     "@base-ui/react": "catalog:",
     "class-variance-authority": "catalog:",
@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@repo/tsconfig": "workspace:*",
+    "@tanstack/react-router": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "tailwindcss": "catalog:",

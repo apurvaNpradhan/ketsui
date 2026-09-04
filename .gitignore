@@ -9,3 +9,7 @@ repos/
 .env.*
 !.env.example
 !.env.*.example
+
+.nx/
+.claude/worktrees
+.claude/settings.local.json

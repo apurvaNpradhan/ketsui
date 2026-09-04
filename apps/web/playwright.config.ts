@@ -19,7 +19,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "vp run build && vp run start:e2e",
+    command: "pnpm nx run web:start",
     env: {
       NODE_ENV: "production",
       PORT: String(PORT),

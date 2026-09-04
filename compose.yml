@@ -31,9 +31,10 @@ services:
       DATABASE_URL: postgresql://backend_app:${BACKEND_DB_PASSWORD}@db:5432/backend_db
       DATABASE_MIGRATION_URL: postgresql://backend_migration_user:${BACKEND_MIGRATION_DB_PASSWORD}@db:5432/backend_db
       BACKEND_PORT: ${BACKEND_PORT:-8000}
+      # The issuer is public; the backend reads JWKS over the private Compose network.
       BETTER_AUTH_JWKS_URL: http://frontend:${FRONTEND_PORT:-5173}/api/auth/jwks
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
-      FASTAPI_ENV: ${FASTAPI_ENV:-development}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL must be set to the public auth URL}
+      FASTAPI_ENV: ${FASTAPI_ENV:-production}
       PROJECT_NAME: ${PROJECT_NAME:-Ketsui}
     command: ["uv", "run", "alembic", "upgrade", "head"]
     restart: "no"
@@ -49,8 +50,8 @@ services:
       DATABASE_URL: postgresql://backend_app:${BACKEND_DB_PASSWORD}@db:5432/backend_db
       BACKEND_PORT: ${BACKEND_PORT:-8000}
       BETTER_AUTH_JWKS_URL: http://frontend:${FRONTEND_PORT:-5173}/api/auth/jwks
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
-      FASTAPI_ENV: ${FASTAPI_ENV:-development}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL must be set to the public auth URL}
+      FASTAPI_ENV: ${FASTAPI_ENV:-production}
       FRONTEND_HOST: ${FRONTEND_HOST:-http://localhost:5173}
       AI_ENDPOINT: ${AI_ENDPOINT:-https://api.openai.com/v1}
       AI_API_KEY: ${AI_API_KEY:-}
@@ -96,7 +97,7 @@ services:
     environment:
       AUTH_DATABASE_URL: postgresql://auth_app:${AUTH_DB_PASSWORD}@db:5432/auth_db
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:5173}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL must be set to the public auth URL}
       FASTAPI_ORIGIN: http://backend:${BACKEND_PORT:-8000}
       FRONTEND_PORT: ${FRONTEND_PORT:-5173}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}

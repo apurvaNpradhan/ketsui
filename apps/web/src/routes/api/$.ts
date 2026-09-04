@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/auth";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { isTrustedOrigin } from "#/lib/api/origin.ts";
 import {
   buildBackendUrl,
   filterResponseHeaders,
@@ -18,9 +19,7 @@ async function proxy(request: Request): Promise<Response> {
   }
 
   if (unsafeMethods.has(request.method)) {
-    const requestOrigin = request.headers.get("origin");
-    const authOrigin = process.env.BETTER_AUTH_URL;
-    if (requestOrigin && authOrigin && requestOrigin !== new URL(authOrigin).origin) {
+    if (!isTrustedOrigin(request.headers.get("origin"), process.env.BETTER_AUTH_URL)) {
       return Response.json({ detail: "Invalid request origin" }, { status: 403 });
     }
 

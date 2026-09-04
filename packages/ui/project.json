@@ -1,0 +1,27 @@
+{
+  "name": "ui",
+  "projectType": "library",
+  "sourceRoot": "packages/ui",
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm --dir packages/ui exec tsc --noEmit -p tsconfig.json" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxlint --config .oxlintrc.json packages/ui" }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxfmt packages/ui" }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm exec oxfmt --check packages/ui" }
+    },
+    "ui": {
+      "executor": "nx:run-commands",
+      "options": { "command": "pnpm --dir packages/ui run ui" }
+    }
+  }
+}

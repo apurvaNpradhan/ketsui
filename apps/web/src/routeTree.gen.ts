@@ -37,7 +37,7 @@ const AuthAgentRoute = AuthAgentRouteImport.update({
   id: '/agent',
   path: '/agent',
   getParentRoute: () => AuthRouteRoute,
-} as any)
+} as any).lazy(() => import('./routes/_auth/agent.lazy').then((d) => d.Route))
 const AuthAppRouteRoute = AuthAppRouteRouteImport.update({
   id: '/app',
   path: '/app',

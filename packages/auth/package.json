@@ -11,7 +11,10 @@
     "better-auth": "catalog:"
   },
   "devDependencies": {
+    "@repo/db": "workspace:*",
     "@repo/tsconfig": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-start": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
